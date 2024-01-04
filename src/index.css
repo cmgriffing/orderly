@@ -66,3 +66,10 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+/* Mantine Overrides */
+
+/* this seems like a bug in mantine */
+.mantine-Modal-inner {
+  left: 0;
+}
