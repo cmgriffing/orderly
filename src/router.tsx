@@ -8,7 +8,7 @@ import { Snippet } from "./routes/Snippet";
 export const router = createHashRouter(
   [
     {
-      path: "/",
+      path: "",
       element: <App />,
       children: [
         {
@@ -28,6 +28,6 @@ export const router = createHashRouter(
     },
   ],
   {
-    basename: "/orderly",
+    // basename: "orderly",
   }
 );
