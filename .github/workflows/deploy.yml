@@ -13,6 +13,7 @@ env:
   # BUILD_PATH: subfolder
 jobs:
   Explore-GitHub-Actions:
+    permissions: write-all
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
