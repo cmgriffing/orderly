@@ -51,4 +51,7 @@ jobs:
 
       - name: Deploy to GitHub Pages
         id: deployment
-        run: pnpm run deploy
+        run: |
+          git config --global user.email "cmgriffing@gmail.com"
+          git config --global user.name "Chris Griffing"
+          pnpm run deploy
