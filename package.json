@@ -8,7 +8,8 @@
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "models": "tsx scripts/get-models.ts"
+    "models": "tsx scripts/get-models.ts",
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@mantine/core": "^7.3.2",
@@ -47,6 +48,7 @@
     "eslint": "^8.55.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
+    "gh-pages": "^6.1.1",
     "postcss": "^8.4.32",
     "postcss-preset-mantine": "^1.12.2",
     "postcss-simple-vars": "^7.0.1",
