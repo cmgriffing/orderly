@@ -7,23 +7,6 @@ declare const Module: any;
 
 import "./Demo.css";
 
-function setAudio(
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  audio: Float32Array | null
-) {
-  //if (audio) {
-  //    // convert to 16-bit PCM
-  //    var blob = new Blob([audio], { type: 'audio/wav' });
-  //    var url = URL.createObjectURL(blob);
-  //    document.getElementById('source').src = url;
-  //    document.getElementById('audio').hidden = false;
-  //    document.getElementById('audio').loop = false;
-  //    document.getElementById('audio').load();
-  //} else {
-  //    document.getElementById('audio').hidden = true;
-  //}
-}
-
 const urls = {
   "tiny.en": "/models/tiny.en.bin",
   tiny: "/models/tiny.bin",
@@ -142,7 +125,7 @@ export function Demo() {
     "file"
   );
   const [selectedFile, setSelectedFile] = useState<File>();
-  const [selectedLanguage, setSelectedLanguage] = useState("");
+  const [selectedLanguage, setSelectedLanguage] = useState("en");
   const [progress, setProgress] = useState(0);
   const [modelWhisperStatus, setModelWhisperStatus] = useState("");
   const [modelWhisperResult, setModelWhisperResult] = useState("");
@@ -301,14 +284,11 @@ export function Demo() {
                   "js: truncated audio to first " + kMaxAudio_s + " seconds"
                 );
               }
-
-              setAudio(audio.current);
             });
           },
           function (e) {
             printTextarea("js: error decoding audio: " + e);
             audio.current = null;
-            setAudio(audio.current);
           }
         );
       }
@@ -406,13 +386,11 @@ export function Demo() {
                             " seconds"
                         );
                       }
-                      setAudio(audio.current);
                     });
                 },
                 function (e) {
                   printTextarea("js: error decoding audio: " + e);
                   audio.current = null;
-                  setAudio(audio.current);
                 }
               );
             }
@@ -464,8 +442,6 @@ export function Demo() {
   // transcribe
   //
 
-  const nthreads = 8;
-
   function changeThreads(value: number) {
     setThreads(value);
   }
@@ -496,11 +472,19 @@ export function Demo() {
       printTextarea("");
 
       setTimeout(function () {
-        const ret = Module.full_default(
-          instance.current,
+        console.log({
+          instance: instance.current,
           audio,
           selectedLanguage,
-          nthreads,
+          threads,
+          translate,
+        });
+
+        const ret = Module.full_default(
+          instance.current,
+          audio.current,
+          selectedLanguage,
+          threads,
           translate
         );
         console.log("js: full_default returned: " + ret);
@@ -753,7 +737,9 @@ export function Demo() {
               max="16"
               value={threads}
               onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                changeThreads(parseInt(event.currentTarget.value || "8"));
+                const newThreads = parseInt(event.currentTarget.value || "8");
+                console.log({ newThreads });
+                changeThreads(newThreads);
               }}
             />
             <span id="threads-value">{threads}</span>

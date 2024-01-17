@@ -4,6 +4,7 @@ import { drizzle } from "drizzle-orm/sqlite-proxy";
 import * as bookSchema from "./models/books";
 import * as chapterSchema from "./models/chapters";
 import * as snippetSchema from "./models/snippets";
+import { USER_ID } from "../constants";
 
 const { driver, sql } = new SQLocalDrizzle("database.sqlite3");
 export const db = drizzle(driver, {
@@ -18,6 +19,7 @@ export const db = drizzle(driver, {
   await sql`DROP TABLE IF EXISTS books`;
   await sql`DROP TABLE IF EXISTS chapters`;
   await sql`DROP TABLE IF EXISTS snippets`;
+  await sql`DROP TABLE IF EXISTS settings`;
 };
 
 await sql`PRAGMA foreign_keys = ON;`;
@@ -53,3 +55,15 @@ await sql`CREATE TABLE IF NOT EXISTS snippets (
   chapter_id INTEGER NOT NULL,
   FOREIGN KEY(chapter_id) REFERENCES chapters(id) ON DELETE CASCADE
 )`;
+
+await sql`CREATE TABLE IF NOT EXISTS settings (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL UNIQUE,
+  threads INTEGER NOT NULL DEFAULT 2,
+  selected_model TEXT NOT NULL DEFAULT '',
+  created_at INTEGER NOT NULL,
+  modified_at INTEGER NOT NULL
+)`;
+
+await sql`INSERT OR IGNORE INTO settings(id,user_id,threads,selected_model,created_at,modified_at)
+VALUES (0,1,2,'',0,0)`;

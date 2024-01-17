@@ -82,8 +82,6 @@ export function Chapter() {
                     label: "New Snippet",
                     sortOrder: snippets?.length || 0,
                     chapterId,
-                    createdAt: Date.now(),
-                    modifiedAt: Date.now(),
                   });
 
                   if (newSnippet) {

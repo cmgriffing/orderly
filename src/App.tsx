@@ -7,9 +7,10 @@ import {
   ActionIcon,
   Button,
   Menu,
+  Box,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Outlet, Link } from "react-router-dom";
 import { BookWithChapters, BooksCRUD } from "./data/repositories/books";
 import {
@@ -19,11 +20,13 @@ import {
   IconPlus,
   IconTextSize,
   IconTrash,
+  IconSettings,
 } from "@tabler/icons-react";
 import { NodeApi, Tree } from "react-arborist";
 import { ChaptersCRUD } from "./data/repositories/chapters";
 import { CreateOrUpdateModal } from "./components/CreateOrUpdateModal";
-import { currentBooks, fetchTimestamp } from "./state/main";
+import { SettingsModal } from "./components/SettingsModal";
+import { currentBooks, currentModel, fetchTimestamp } from "./state/main";
 import { useAtom } from "jotai";
 
 export function App() {
@@ -42,10 +45,22 @@ export function App() {
     { open: openCreateChapterModal, close: closeCreateChapterModal },
   ] = useDisclosure(false);
 
+  const [
+    settingsModalOpened,
+    { open: openSettingsModal, close: closeSettingsModal },
+  ] = useDisclosure(false);
+
   const [currentBook, setCurrentBook] = useState<BookWithChapters>();
 
   const [books] = useAtom(currentBooks);
   const [, setFetchTimestamp] = useAtom(fetchTimestamp);
+  const [whisperModel] = useAtom(currentModel);
+
+  useEffect(() => {
+    if (!whisperModel) {
+      openSettingsModal();
+    }
+  }, [whisperModel, openSettingsModal]);
 
   return (
     <>
@@ -59,15 +74,29 @@ export function App() {
         padding="md"
       >
         <AppShell.Header>
-          <Group h="100%" px="md">
-            <Burger
-              opened={opened}
-              onClick={toggle}
-              hiddenFrom="sm"
-              size="sm"
-            />
-            <Text>Orderly</Text>
-          </Group>
+          <Flex justify={"space-between"} align="center" p={12}>
+            <Group h="100%" px="md">
+              <Burger
+                opened={opened}
+                onClick={toggle}
+                hiddenFrom="sm"
+                size="sm"
+              />
+              <Text>Orderly</Text>
+            </Group>
+            <Group>
+              <Button
+                onClick={() => {
+                  openSettingsModal();
+                }}
+              >
+                Settings
+                <Box ml={4}>
+                  <IconSettings />
+                </Box>
+              </Button>
+            </Group>
+          </Flex>
         </AppShell.Header>
         <AppShell.Navbar p="md">
           <Flex align="center" justify={"space-between"} mb={24}>
@@ -274,6 +303,17 @@ export function App() {
               } catch (e) {
                 console.log("oof", e);
               }
+            }}
+          />
+
+          <SettingsModal
+            opened={settingsModalOpened}
+            closeable={!!whisperModel}
+            onSubmit={() => {
+              closeSettingsModal();
+            }}
+            onClose={() => {
+              closeSettingsModal();
             }}
           />
         </AppShell.Main>

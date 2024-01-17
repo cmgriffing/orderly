@@ -6,7 +6,7 @@ export function createRepository<Model, InsertModel>(
   table: SQLiteTable<TableConfig>
 ) {
   return Object.freeze({
-    create: (data: Omit<InsertModel, "id">) => {
+    create: (data: Omit<InsertModel, "id" | "createdAt" | "modifiedAt">) => {
       const now = Date.now();
       return (
         db
@@ -28,7 +28,10 @@ export function createRepository<Model, InsertModel>(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .where(eq((table as any).id, id))
         .then((result) => result[0] as Model | undefined),
-    update: (id: number, data: Partial<Omit<InsertModel, "id">>) =>
+    update: (
+      id: number,
+      data: Partial<Omit<InsertModel, "id" | "createdAt" | "modifiedAt">>
+    ) =>
       db
         .update(table)
         .set({
