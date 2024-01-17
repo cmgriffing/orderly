@@ -25,3 +25,4 @@ dist-ssr
 
 # Models
 public/models/*
+public/demo-raw/*
