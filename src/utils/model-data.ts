@@ -3,6 +3,11 @@ import { whisperModelSizes } from "../whisper-utils";
 const dbVersion = 1;
 const dbName = "whisperModels";
 
+// local
+// const modelBaseUrl = "/models";
+// remote
+const modelBaseUrl = "https://f002.backblazeb2.com/file/orderly-models";
+
 export function loadOrGetModel(
   selectedModel: keyof typeof whisperModelSizes | "" | undefined,
   progressCallback: (progress: number) => void
@@ -75,7 +80,7 @@ export function loadOrGetModel(
             return;
           }
 
-          const url = `/models/${selectedModel}.bin`;
+          const url = `${modelBaseUrl}/${selectedModel}.bin`;
 
           fetchRemote(url, (progress) => {
             progressCallback(progress);

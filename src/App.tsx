@@ -23,7 +23,7 @@ import {
   IconSettings,
 } from "@tabler/icons-react";
 import { NodeApi, Tree } from "react-arborist";
-import { ChaptersCRUD } from "./data/repositories/chapters";
+import { ChapterModel, ChaptersCRUD } from "./data/repositories/chapters";
 import { CreateOrUpdateModal } from "./components/CreateOrUpdateModal";
 import { SettingsModal } from "./components/SettingsModal";
 import { currentBooks, currentModel, fetchTimestamp } from "./state/main";
@@ -137,8 +137,12 @@ export function App() {
                   2;
               }
 
+              const nodeData = e.dragNodes[0].data as unknown as {
+                chapter: ChapterModel;
+              };
+
               // this is wrong. Updating every node would be easy enough. Might be better to manage a prev/next field
-              await ChaptersCRUD.update(e.dragNodes[0].data.chapter.id, {
+              await ChaptersCRUD.update(nodeData.chapter.id, {
                 sortOrder: newSortOrder,
               });
 
@@ -155,8 +159,12 @@ export function App() {
             }))}
             childrenAccessor={"chapters"}
           >
-            {({ node, style, dragHandle }) =>
-              !node.isLeaf ? (
+            {({ node, style, dragHandle }) => {
+              const nodeData = node.data as unknown as {
+                chapter: ChapterModel;
+              };
+
+              return !node.isLeaf ? (
                 <Flex
                   style={style}
                   justify={"space-between"}
@@ -217,15 +225,16 @@ export function App() {
                   </Menu>
                 </Flex>
               ) : (
-                <Link
-                  ref={dragHandle}
-                  to={`/books/${node.data.chapter.bookId}/chapters/${node.data.chapter.id}`}
-                  style={style}
-                >
-                  {node.data.chapter.label}
-                </Link>
-              )
-            }
+                <div ref={dragHandle}>
+                  <Link
+                    to={`/books/${nodeData.chapter.bookId}/chapters/${nodeData.chapter.id}`}
+                    style={style}
+                  >
+                    {nodeData.chapter.label}
+                  </Link>
+                </div>
+              );
+            }}
           </Tree>
         </AppShell.Navbar>
         <AppShell.Main w={"100dvw"} display={"flex"}>
@@ -322,6 +331,7 @@ export function App() {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function FolderArrow({ node }: { node: NodeApi<any> }) {
   if (node.isLeaf) return <span></span>;
   return <span>{node.isOpen ? <IconCaretDown /> : <IconCaretRight />}</span>;

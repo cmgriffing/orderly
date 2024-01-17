@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   TextInput,
@@ -54,7 +54,7 @@ export function Snippet() {
   const [whisper] = useAtom(whisperInstance);
   const [audio, setAudio] = useState<Float32Array>(new Float32Array());
   const [audioBlob, setAudioBlob] = useState<Blob>();
-  const [audioString, setAudioString] = useState("");
+  const [, setAudioString] = useState("");
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const [{ start: startRecording, stop: stopRecording }, setMicrophone] =
@@ -102,15 +102,16 @@ export function Snippet() {
   }, [audio, audioBlob]);
 
   useEffect(() => {
-    async function listener(e: any) {
-      console.log("resultEvent", e, e.detail);
+    async function listener(e: Event) {
+      const event = e as CustomEvent;
+      console.log("resultEvent", event, event.detail);
 
       if (contentRef.current) {
-        contentRef.current.value = e.detail;
+        contentRef.current.value = event.detail;
       }
 
       await SnippetsCRUD.update(snippetId, {
-        content: e.detail,
+        content: event.detail,
       });
       setFetchTimestamp(Date.now());
     }

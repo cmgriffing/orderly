@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { Link, Outlet, useNavigate, useParams } from "react-router-dom";
 import { ActionIcon, Box, Flex, Menu, Text } from "@mantine/core";
 import { Tree } from "react-arborist";
@@ -13,7 +13,6 @@ import {
   IconCircle,
   IconCircleDashed,
   IconCircleCheck,
-  IconCactusFilled,
   IconCircleFilled,
   IconHelpCircle,
 } from "@tabler/icons-react";
@@ -132,19 +131,20 @@ export function Chapter() {
             data={snippets}
           >
             {({ node, style, dragHandle }) => (
-              <Link
-                ref={dragHandle}
-                to={`/books/${bookId}/chapters/${node.data.chapterId}/snippets/${node.data?.id}`}
-                style={style}
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-              >
-                <Flex>
-                  <SnippetIcon snippet={node.data} />
-                  {node.data.label}
-                </Flex>
-              </Link>
+              <div ref={dragHandle}>
+                <Link
+                  to={`/books/${bookId}/chapters/${node.data.chapterId}/snippets/${node.data?.id}`}
+                  style={style}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                  }}
+                >
+                  <Flex>
+                    <SnippetIcon snippet={node.data} />
+                    {node.data.label}
+                  </Flex>
+                </Link>
+              </div>
             )}
           </Tree>
         )}

@@ -4,7 +4,6 @@ import { drizzle } from "drizzle-orm/sqlite-proxy";
 import * as bookSchema from "./models/books";
 import * as chapterSchema from "./models/chapters";
 import * as snippetSchema from "./models/snippets";
-import { USER_ID } from "../constants";
 
 const { driver, sql } = new SQLocalDrizzle("database.sqlite3");
 export const db = drizzle(driver, {
@@ -15,6 +14,7 @@ export const db = drizzle(driver, {
   },
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 (window as any).resetDB = async function () {
   await sql`DROP TABLE IF EXISTS books`;
   await sql`DROP TABLE IF EXISTS chapters`;
@@ -22,16 +22,18 @@ export const db = drizzle(driver, {
   await sql`DROP TABLE IF EXISTS settings`;
 };
 
-await sql`PRAGMA foreign_keys = ON;`;
+// IIFE to make sure that the schema is created before the app starts
+(async () => {
+  await sql`PRAGMA foreign_keys = ON;`;
 
-await sql`CREATE TABLE IF NOT EXISTS books (
+  await sql`CREATE TABLE IF NOT EXISTS books (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   title TEXT NOT NULL,
   created_at INTEGER NOT NULL,
   modified_at INTEGER NOT NULL
 )`;
 
-await sql`CREATE TABLE IF NOT EXISTS chapters (
+  await sql`CREATE TABLE IF NOT EXISTS chapters (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   label TEXT NOT NULL,
   sort_order REAL NOT NULL,
@@ -41,7 +43,7 @@ await sql`CREATE TABLE IF NOT EXISTS chapters (
   FOREIGN KEY(book_id) REFERENCES books(id) ON DELETE CASCADE
 )`;
 
-await sql`CREATE TABLE IF NOT EXISTS snippets (
+  await sql`CREATE TABLE IF NOT EXISTS snippets (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   label TEXT NOT NULL,
   content TEXT NOT NULL DEFAULT "",
@@ -56,7 +58,7 @@ await sql`CREATE TABLE IF NOT EXISTS snippets (
   FOREIGN KEY(chapter_id) REFERENCES chapters(id) ON DELETE CASCADE
 )`;
 
-await sql`CREATE TABLE IF NOT EXISTS settings (
+  await sql`CREATE TABLE IF NOT EXISTS settings (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id INTEGER NOT NULL UNIQUE,
   threads INTEGER NOT NULL DEFAULT 2,
@@ -65,5 +67,6 @@ await sql`CREATE TABLE IF NOT EXISTS settings (
   modified_at INTEGER NOT NULL
 )`;
 
-await sql`INSERT OR IGNORE INTO settings(id,user_id,threads,selected_model,created_at,modified_at)
+  await sql`INSERT OR IGNORE INTO settings(id,user_id,threads,selected_model,created_at,modified_at)
 VALUES (0,1,2,'',0,0)`;
+})();
