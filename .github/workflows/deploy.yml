@@ -1,5 +1,4 @@
-name: GitHub Actions Demo
-run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+name: Deploy
 on: [push]
 permissions:
   contents: read
@@ -12,7 +11,7 @@ env:
   BUILD_PATH: "." # default value when not using subfolders
   # BUILD_PATH: subfolder
 jobs:
-  Explore-GitHub-Actions:
+  Deploy:
     permissions: write-all
     runs-on: ubuntu-latest
     steps:
