@@ -52,6 +52,7 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         run: |
-          git config --global user.email "cmgriffing@gmail.com"
-          git config --global user.name "Chris Griffing"
-          pnpm run deploy
+          git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
+          pnpx gh-pages -d dist -u "github-actions-bot <support+actions@github.com>"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
