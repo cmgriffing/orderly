@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite + React + TS</title>
+    <script type="module" crossorigin src="/assets/index-a_8hdryy.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-V0QTblNY.css">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      let recentResult = [];
+      const bracketRegex = new RegExp("^\\[.*?\\]");
+      const blankAudioRegex = new RegExp("\\[BLANK_AUDIO\\]$");
+      const whisperTimingRegex = new RegExp("^whisper_print_timings: ");
+
+      window.Module = {
+        print: function (message) {
+          console.log("Custom Print: ", message);
+
+          if (bracketRegex.test(message) && !blankAudioRegex.test(message)) {
+            recentResult.push(message.replace(bracketRegex, "").trim());
+          }
+        },
+        printErr: function (message) {
+          console.log("Custom PrintErr: ", message);
+
+          if (whisperTimingRegex.test(message) && recentResult.length > 0) {
+            window.dispatchEvent(
+              new CustomEvent("whisperResult", {
+                detail: recentResult.join(" "),
+              })
+            );
+            recentResult = [];
+          }
+        },
+      };
+    </script>
+    <script src="/main.js"></script>
+  </body>
+</html>
