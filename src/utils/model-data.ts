@@ -6,7 +6,9 @@ const dbName = "whisperModels";
 // local
 // const modelBaseUrl = "/models";
 // remote
-const modelBaseUrl = "https://f002.backblazeb2.com/file/orderly-models";
+// const modelBaseUrl = "https://f002.backblazeb2.com/file/orderly-models"; // NO CORS
+const modelBaseUrl =
+  "https://link.storjshare.io/s/jueavj4qtolpgszkbp5awref22da/models";
 
 export function loadOrGetModel(
   selectedModel: keyof typeof whisperModelSizes | "" | undefined,
@@ -80,7 +82,7 @@ export function loadOrGetModel(
             return;
           }
 
-          const url = `${modelBaseUrl}/${selectedModel}.bin`;
+          const url = `${modelBaseUrl}/${selectedModel}.bin?download=1`;
 
           fetchRemote(url, (progress) => {
             progressCallback(progress);
