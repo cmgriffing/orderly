@@ -19,22 +19,31 @@ import {
 import {
   currentChapter,
   currentChapterId,
+  currentSnippet,
+  currentSnippetId,
   currentSnippets,
   fetchTimestamp,
 } from "../state/main";
 import { ChaptersCRUD } from "../data/repositories/chapters";
 import { CreateOrUpdateModal } from "../components/CreateOrUpdateModal";
 import { useDisclosure } from "@mantine/hooks";
+import { clsx } from "clsx";
 
 export function Chapter() {
   const navigate = useNavigate();
-  const { bookId, chapterId: rawChapterId } = useParams();
+  const { bookId, chapterId: rawChapterId, snippetId } = useParams();
   const chapterId = parseInt(rawChapterId || "-1");
 
   const [, setFetchTimestamp] = useAtom(fetchTimestamp);
   const [, setCurrentChapterId] = useAtom(currentChapterId);
+  const [, setCurrentSnippetId] = useAtom(currentSnippetId);
   const [chapter] = useAtom(currentChapter);
   const [snippets] = useAtom(currentSnippets);
+  const [selectedSnippet] = useAtom(currentSnippet);
+
+  useEffect(() => {
+    setCurrentSnippetId(snippetId ? parseInt(snippetId) : undefined);
+  }, [snippetId]);
 
   const [
     editChapterModalOpened,
@@ -110,6 +119,7 @@ export function Chapter() {
 
         {snippets.length > 0 && (
           <Tree
+            rowHeight={36}
             onMove={async (e) => {
               let newSortOrder = 0;
               if (e.index === 0) {
@@ -130,18 +140,20 @@ export function Chapter() {
             }}
             data={snippets}
           >
-            {({ node, style, dragHandle }) => (
-              <div ref={dragHandle}>
+            {({ node, dragHandle, style }) => (
+              <div ref={dragHandle} style={{ ...style, padding: "4px" }}>
                 <Link
                   to={`/books/${bookId}/chapters/${node.data.chapterId}/snippets/${node.data?.id}`}
-                  style={style}
                   onClick={(e) => {
                     e.stopPropagation();
                   }}
+                  className={clsx("tree-link", {
+                    selected: selectedSnippet?.id === node?.data.id,
+                  })}
                 >
-                  <Flex>
-                    <SnippetIcon snippet={node.data} />
-                    {node.data.label}
+                  <Flex align="center">
+                    <SnippetIcon snippet={node.data} height={24} />
+                    <Text>{node.data.label}</Text>
                   </Flex>
                 </Link>
               </div>
@@ -188,26 +200,48 @@ export function Chapter() {
 //   Finished = "finished",
 // }
 
-function SnippetIcon({ snippet }: { snippet: SnippetModel }) {
+function SnippetIcon({
+  snippet,
+  height,
+}: {
+  snippet: SnippetModel;
+  height: number;
+}) {
   // let status = SnippetStatus.Unknown;
-  let statusComponent = <IconHelpCircle color="gray" aria-label="Unknown" />;
+  let statusComponent = (
+    <IconHelpCircle color="gray" aria-label="Unknown" height={height} />
+  );
 
   if (snippet.content === "" && snippet.recordedAt === 0) {
     // status = SnippetStatus.New;
-    statusComponent = <IconCircle color="gray" aria-label="No Content" />;
+    statusComponent = (
+      <IconCircle color="gray" aria-label="No Content" height={height} />
+    );
   } else if (snippet.recordedAt > snippet.processedAt) {
     // status = SnippetStatus.Processing;
-    statusComponent = <IconCircleDashed color="blue" aria-label="Processing" />;
+    statusComponent = (
+      <IconCircleDashed color="blue" aria-label="Processing" height={height} />
+    );
   } else if (snippet.processedAt >= snippet.modifiedAt) {
     // status = SnippetStatus.Raw;
-    statusComponent = <IconCircleFilled color="gray" aria-label="Unedited" />;
+    statusComponent = (
+      <IconCircleFilled color="gray" aria-label="Unedited" height={height} />
+    );
   } else if (snippet.finishedAt < snippet.modifiedAt) {
     // status = SnippetStatus.Edited;
-    statusComponent = <IconCircleFilled color="blue" aria-label="Edited" />;
+    statusComponent = (
+      <IconCircleFilled color="blue" aria-label="Edited" height={height} />
+    );
   } else {
     // status = SnippetStatus.Finished;
-    statusComponent = <IconCircleCheck color="green" aria-label="Finished" />;
+    statusComponent = (
+      <IconCircleCheck color="green" aria-label="Finished" height={height} />
+    );
   }
 
-  return <Box mr={4}>{statusComponent}</Box>;
+  return (
+    <Flex mr={4} align="center">
+      {statusComponent}
+    </Flex>
+  );
 }

@@ -11,7 +11,7 @@ import {
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useEffect, useState } from "react";
-import { Outlet, Link } from "react-router-dom";
+import { Outlet, Link, useNavigate } from "react-router-dom";
 import { BookWithChapters, BooksCRUD } from "./data/repositories/books";
 import {
   IconCaretRight,
@@ -26,10 +26,19 @@ import { NodeApi, Tree } from "react-arborist";
 import { ChapterModel, ChaptersCRUD } from "./data/repositories/chapters";
 import { CreateOrUpdateModal } from "./components/CreateOrUpdateModal";
 import { SettingsModal } from "./components/SettingsModal";
-import { currentBooks, currentModel, fetchTimestamp } from "./state/main";
+import {
+  currentBooks,
+  currentChapter,
+  currentModel,
+  fetchTimestamp,
+} from "./state/main";
 import { useAtom } from "jotai";
+import { clsx } from "clsx";
+import "./App.scss";
 
 export function App() {
+  const navigate = useNavigate();
+  const [selectedChapter] = useAtom(currentChapter);
   const [opened, { toggle }] = useDisclosure();
   const [
     createBookModalOpened,
@@ -118,6 +127,7 @@ export function App() {
             </Group>
           </Flex>
           <Tree
+            rowHeight={36}
             onMove={async (e) => {
               if (!e?.parentNode?.data.book?.chapters) {
                 return;
@@ -230,10 +240,12 @@ export function App() {
                   </Menu>
                 </Flex>
               ) : (
-                <div ref={dragHandle}>
+                <div ref={dragHandle} style={style}>
                   <Link
                     to={`/books/${nodeData.chapter.bookId}/chapters/${nodeData.chapter.id}`}
-                    style={style}
+                    className={clsx("tree-link", {
+                      selected: selectedChapter?.id === nodeData.chapter.id,
+                    })}
                   >
                     {nodeData.chapter.label}
                   </Link>
@@ -304,7 +316,7 @@ export function App() {
                   currentBook?.chapters[currentBook?.chapters.length - 1];
                 const sortOrder = lastChapter ? lastChapter.sortOrder + 1 : 0;
 
-                await ChaptersCRUD.create({
+                const newChapter = await ChaptersCRUD.create({
                   label: newTitle,
                   sortOrder,
                   bookId: currentBook?.id,
@@ -312,6 +324,9 @@ export function App() {
 
                 setFetchTimestamp(Date.now());
                 closeCreateChapterModal();
+                navigate(
+                  `/books/${currentBook?.id}/chapters/${newChapter?.id}`
+                );
               } catch (e) {
                 console.log("oof", e);
               }
