@@ -102,14 +102,18 @@ export function Snippet() {
       const event = e as CustomEvent;
       console.log("resultEvent", event, event.detail);
 
-      if (contentRef.current) {
-        contentRef.current.value = event.detail;
-      }
-
       await SnippetsCRUD.update(snippetId, {
         content: event.detail,
+        processedAt: Date.now(),
       });
-      setFetchTimestamp(Date.now());
+
+      startTransition(() => {
+        setFetchTimestamp(Date.now());
+      });
+
+      // if (contentRef.current) {
+      //   contentRef.current.value = event.detail;
+      // }
     }
 
     window.addEventListener("whisperResult", listener);
@@ -187,6 +191,7 @@ export function Snippet() {
         <Flex direction={"column"} align="center" justify="center" my={42}>
           <Button
             variant="light"
+            rightSection={<IconCirclePlus />}
             onClick={async () => {
               if (snippet) {
                 const currentSnippetSortOrder = snippet.sortOrder;
@@ -211,13 +216,14 @@ export function Snippet() {
               }
             }}
           >
-            Insert Before <IconCirclePlus />
+            Insert Before
           </Button>
         </Flex>
 
         <SnippetForm
           snippet={snippet}
           bookId={bookId || ""}
+          contentRef={contentRef}
           onEditLabel={async (label) => {
             await SnippetsCRUD.update(snippetId, {
               label,
@@ -244,6 +250,7 @@ export function Snippet() {
         <Flex direction={"column"} align="center" justify="center" my={42}>
           <Button
             variant="light"
+            rightSection={<IconCirclePlus />}
             onClick={async () => {
               if (snippet) {
                 const currentSnippetSortOrder = snippet.sortOrder;
@@ -266,7 +273,7 @@ export function Snippet() {
               }
             }}
           >
-            Insert After <IconCirclePlus />
+            Insert After
           </Button>
         </Flex>
 
@@ -305,6 +312,9 @@ export function Snippet() {
               onClick={() => {
                 stopRecording();
                 closeRecordingModal();
+                SnippetsCRUD.update(snippetId, {
+                  recordedAt: Date.now(),
+                });
               }}
             >
               Stop Recording

@@ -100,14 +100,12 @@ export function App() {
             </Group>
             <Group>
               <Button
+                rightSection={<IconSettings />}
                 onClick={() => {
                   openSettingsModal();
                 }}
               >
                 Settings
-                <Box ml={4}>
-                  <IconSettings />
-                </Box>
               </Button>
             </Group>
           </Flex>
@@ -117,12 +115,12 @@ export function App() {
             <Text>Books</Text>
             <Group>
               <Button
+                rightSection={<IconPlus stroke={3} />}
                 onClick={() => {
                   openCreateBookModal();
                 }}
               >
                 Book
-                <IconPlus stroke={3} />
               </Button>
             </Group>
           </Flex>
