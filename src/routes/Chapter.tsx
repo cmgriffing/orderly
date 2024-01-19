@@ -1,21 +1,18 @@
 import { useEffect } from "react";
 import { Link, Outlet, useNavigate, useParams } from "react-router-dom";
-import { ActionIcon, Box, Flex, Menu, Text, ScrollArea } from "@mantine/core";
+import { ActionIcon, Flex, Menu, Text, ScrollArea } from "@mantine/core";
 import { Tree } from "react-arborist";
 import { useAtom } from "jotai";
+import { useDisclosure } from "@mantine/hooks";
+import { clsx } from "clsx";
 
-import { SnippetsCRUD, SnippetModel } from "../data/repositories/snippets";
 import {
   IconDots,
   IconTextSize,
   IconPlus,
   IconTrash,
-  IconCircle,
-  IconCircleDashed,
-  IconCircleCheck,
-  IconCircleFilled,
-  IconHelpCircle,
 } from "@tabler/icons-react";
+
 import {
   currentChapter,
   currentChapterId,
@@ -24,10 +21,11 @@ import {
   currentSnippets,
   fetchTimestamp,
 } from "../state/main";
+
 import { ChaptersCRUD } from "../data/repositories/chapters";
+import { SnippetsCRUD } from "../data/repositories/snippets";
 import { CreateOrUpdateModal } from "../components/CreateOrUpdateModal";
-import { useDisclosure } from "@mantine/hooks";
-import { clsx } from "clsx";
+import { SnippetStatusIcon } from "../components/SnippetStatusIcon";
 
 export function Chapter() {
   const navigate = useNavigate();
@@ -43,7 +41,7 @@ export function Chapter() {
 
   useEffect(() => {
     setCurrentSnippetId(snippetId ? parseInt(snippetId) : undefined);
-  }, [snippetId]);
+  }, [snippetId, setCurrentSnippetId]);
 
   const [
     editChapterModalOpened,
@@ -152,7 +150,7 @@ export function Chapter() {
                   })}
                 >
                   <Flex align="center">
-                    <SnippetIcon snippet={node.data} height={24} />
+                    <SnippetStatusIcon snippet={node.data} height={24} />
                     <Text>{node.data.label}</Text>
                   </Flex>
                 </Link>
@@ -187,61 +185,6 @@ export function Chapter() {
           }
         }}
       />
-    </Flex>
-  );
-}
-
-// enum SnippetStatus {
-//   Unknown = "unknown",
-//   New = "new",
-//   Processing = "processing",
-//   Raw = "raw",
-//   Edited = "edited",
-//   Finished = "finished",
-// }
-
-function SnippetIcon({
-  snippet,
-  height,
-}: {
-  snippet: SnippetModel;
-  height: number;
-}) {
-  // let status = SnippetStatus.Unknown;
-  let statusComponent = (
-    <IconHelpCircle color="gray" aria-label="Unknown" height={height} />
-  );
-
-  if (snippet.content === "" && snippet.recordedAt === 0) {
-    // status = SnippetStatus.New;
-    statusComponent = (
-      <IconCircle color="gray" aria-label="No Content" height={height} />
-    );
-  } else if (snippet.recordedAt > snippet.processedAt) {
-    // status = SnippetStatus.Processing;
-    statusComponent = (
-      <IconCircleDashed color="blue" aria-label="Processing" height={height} />
-    );
-  } else if (snippet.processedAt >= snippet.modifiedAt) {
-    // status = SnippetStatus.Raw;
-    statusComponent = (
-      <IconCircleFilled color="gray" aria-label="Unedited" height={height} />
-    );
-  } else if (snippet.finishedAt < snippet.modifiedAt) {
-    // status = SnippetStatus.Edited;
-    statusComponent = (
-      <IconCircleFilled color="blue" aria-label="Edited" height={height} />
-    );
-  } else {
-    // status = SnippetStatus.Finished;
-    statusComponent = (
-      <IconCircleCheck color="green" aria-label="Finished" height={height} />
-    );
-  }
-
-  return (
-    <Flex mr={4} align="center">
-      {statusComponent}
     </Flex>
   );
 }

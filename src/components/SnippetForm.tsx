@@ -1,6 +1,19 @@
 import { RefObject, useEffect, useState } from "react";
-import { TextInput, Textarea, Flex, Group, Button, Box } from "@mantine/core";
-import { IconMicrophone, IconTrash } from "@tabler/icons-react";
+import {
+  TextInput,
+  Textarea,
+  Flex,
+  Group,
+  Button,
+  Box,
+  Popover,
+  Text,
+} from "@mantine/core";
+import {
+  IconMicrophone,
+  IconTrash,
+  IconCaretDownFilled,
+} from "@tabler/icons-react";
 import { clsx } from "clsx";
 import { Link } from "react-router-dom";
 
@@ -11,6 +24,11 @@ dayjs.extend(relativeTime);
 import { SnippetModel } from "../data/repositories/snippets";
 
 import "./SnippetForm.scss";
+import {
+  SnippetStatus,
+  SnippetStatusIcon,
+  getSnippetStatus,
+} from "./SnippetStatusIcon";
 
 interface BaseSnippetProps {
   bookId: string;
@@ -49,27 +67,67 @@ export function SnippetForm({
 }: SnippetFormProps | DisabledSnippetProps) {
   const [labelValue, setLabelValue] = useState(snippet?.label || "");
   const [contentValue, setContentValue] = useState(snippet?.content || "");
+  const status = getSnippetStatus(snippet);
 
   useEffect(() => {
     setLabelValue(snippet?.label || "");
     setContentValue(snippet?.content || "");
   }, [snippet]);
 
+  console.log({ status });
+
+  console.log({ snippet });
+
   const contents = (
     <>
-      <Box>
-        <Box>Created At: {dayjs(snippet?.createdAt).fromNow()}</Box>
-        <Box>Modified At: {dayjs(snippet?.modifiedAt).fromNow()}</Box>
-        {!!snippet?.recordedAt && (
-          <Box>Recorded At: {dayjs(snippet?.recordedAt).fromNow()}</Box>
-        )}
-        {!!snippet?.recordedAt && (
-          <Box>Processed At: {dayjs(snippet?.processedAt).fromNow()}</Box>
-        )}
-        {!!snippet?.recordedAt && (
-          <Box>Finished At: {dayjs(snippet?.finishedAt).fromNow()}</Box>
-        )}
-      </Box>
+      <Flex justify={"flex-end"}>
+        <Popover width={240} trapFocus position="bottom" withArrow shadow="md">
+          <Popover.Target>
+            <Button
+              variant={"outline"}
+              leftSection={<SnippetStatusIcon snippet={snippet!} height={24} />}
+              rightSection={<IconCaretDownFilled width={12} />}
+            >
+              Status
+            </Button>
+          </Popover.Target>
+          <Popover.Dropdown>
+            <Flex justify={"space-between"}>
+              <Text>Status:</Text> <Text>{SnippetStatus[status]}</Text>
+            </Flex>
+            <Flex justify="space-between">
+              <Text>Created:</Text>
+              {dayjs(snippet?.createdAt).fromNow()}
+            </Flex>
+            <Flex justify="space-between">
+              <Text>Modified:</Text>
+              {dayjs(snippet?.modifiedAt).fromNow()}
+            </Flex>
+            {snippet &&
+              snippet?.recordedAt > 0 &&
+              status > SnippetStatus.New && (
+                <Flex justify="space-between">
+                  <Text>Recorded:</Text>
+                  {dayjs(snippet?.recordedAt).fromNow()}
+                </Flex>
+              )}
+            {snippet &&
+              snippet?.processedAt > 0 &&
+              status > SnippetStatus.Processing && (
+                <Flex justify="space-between">
+                  <Text>Processed:</Text>
+                  {dayjs(snippet?.processedAt).fromNow()}
+                </Flex>
+              )}
+            {/* {status > SnippetStatus.Raw && status <= SnippetStatus.Finished && (
+              <Flex justify="space-between">
+                <Text>Finished:</Text>
+                {dayjs(snippet?.finishedAt).fromNow()}
+              </Flex>
+            )} */}
+          </Popover.Dropdown>
+        </Popover>
+      </Flex>
 
       <TextInput
         label="Label"
@@ -99,9 +157,9 @@ export function SnippetForm({
             onRecord();
           }}
           disabled={disabled}
+          rightSection={<IconMicrophone />}
         >
           Record Audio
-          <IconMicrophone />
         </Button>
         <Button
           color="red"
@@ -109,8 +167,9 @@ export function SnippetForm({
             onDelete();
           }}
           disabled={disabled}
+          rightSection={<IconTrash />}
         >
-          Delete <IconTrash />
+          Delete
         </Button>
       </Group>
     </>

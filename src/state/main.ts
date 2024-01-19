@@ -34,6 +34,7 @@ export const currentSnippets = atom((get) => {
 
 export const currentSnippetId = atom<number | undefined>(undefined);
 export const currentSnippet = atom((get) => {
+  get(fetchTimestamp);
   const snippetId = get(currentSnippetId);
   return SnippetsCRUD.read(snippetId || -1);
 });
