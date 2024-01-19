@@ -82,7 +82,12 @@ export function App() {
                 hiddenFrom="sm"
                 size="sm"
               />
-              <Text>Orderly</Text>
+              <Flex>
+                <Text>Orderly</Text>
+                <Text c="red" ml={4}>
+                  ALPHA
+                </Text>
+              </Flex>
             </Group>
             <Group>
               <Button
@@ -258,8 +263,6 @@ export function App() {
               }
             }}
           />
-
-          <div>{currentBook?.title}</div>
 
           <CreateOrUpdateModal
             opened={editBookModalOpened}

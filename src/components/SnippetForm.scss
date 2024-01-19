@@ -1,0 +1,54 @@
+.snippet-form {
+  color: inherit;
+  position: relative;
+  &:hover {
+    color: inherit;
+  }
+
+  &.disabled {
+    padding: 1rem;
+    margin-top: -20%;
+
+    .contents {
+      opacity: 0.84;
+      transform: scale(0.9);
+      filter: blur(2px);
+      pointer-events: none;
+    }
+
+    .other-snippet-label-wrapper {
+      position: absolute;
+      bottom: 2rem;
+      left: 0;
+      right: 0;
+      display: none;
+
+      .other-snippet-label {
+        border-radius: 1rem;
+        background: gray;
+        margin: 0 auto;
+        padding: 0.5rem 1rem;
+        color: white;
+        width: 10rem;
+        text-align: center;
+      }
+    }
+
+    &.below {
+      margin-top: 0;
+      margin-bottom: -20%;
+
+      .other-snippet-label-wrapper {
+        bottom: auto;
+        top: 2rem;
+      }
+    }
+
+    &:hover,
+    &:focus {
+      .other-snippet-label-wrapper {
+        display: flex;
+      }
+    }
+  }
+}

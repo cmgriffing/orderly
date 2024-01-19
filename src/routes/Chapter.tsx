@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Link, Outlet, useNavigate, useParams } from "react-router-dom";
-import { ActionIcon, Box, Flex, Menu, Text } from "@mantine/core";
+import { ActionIcon, Box, Flex, Menu, Text, ScrollArea } from "@mantine/core";
 import { Tree } from "react-arborist";
 import { useAtom } from "jotai";
 
@@ -150,7 +150,10 @@ export function Chapter() {
         )}
         {(!snippets || snippets?.length === 0) && <div>No Snippets found</div>}
       </Flex>
-      <Outlet />
+
+      <ScrollArea.Autosize mah={"90vh"} w={"100%"} mx="auto">
+        <Outlet />
+      </ScrollArea.Autosize>
 
       <CreateOrUpdateModal
         opened={editChapterModalOpened}

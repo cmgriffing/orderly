@@ -1,26 +1,18 @@
-import { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
-import {
-  TextInput,
-  Textarea,
-  Flex,
-  Group,
-  Button,
-  Box,
-  Modal,
-  Text,
-  Loader,
-} from "@mantine/core";
+import { useEffect, useRef, useState, startTransition } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Flex, Button, Modal, Text, Loader } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useAtom } from "jotai";
 import {
   currentSnippet,
+  currentSnippets,
   currentSnippetId,
   fetchTimestamp,
   whisperInstance,
 } from "../state/main";
-import { SnippetsCRUD } from "../data/repositories/snippets";
-import { IconMicrophone, IconTrash } from "@tabler/icons-react";
+import { IconCirclePlus } from "@tabler/icons-react";
+import { SnippetModel, SnippetsCRUD } from "../data/repositories/snippets";
+import { SnippetForm } from "../components/SnippetForm";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 dayjs.extend(relativeTime);
@@ -43,11 +35,13 @@ function blobToDataURL(blob: Blob): Promise<string> {
 }
 
 export function Snippet() {
-  const { snippetId: rawSnippetId } = useParams();
+  const navigate = useNavigate();
+  const { snippetId: rawSnippetId, bookId } = useParams();
   const snippetId = parseInt(rawSnippetId || "-1");
   const [, setFetchTimestamp] = useAtom(fetchTimestamp);
   const [, setCurrentSnippetId] = useAtom(currentSnippetId);
   const [snippet] = useAtom(currentSnippet);
+  const [snippets] = useAtom(currentSnippets);
   const contentRef = useRef<HTMLTextAreaElement>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);
@@ -56,6 +50,8 @@ export function Snippet() {
   const [audioBlob, setAudioBlob] = useState<Blob>();
   const [, setAudioString] = useState("");
   const audioRef = useRef<HTMLAudioElement>(null);
+  const [previousSnippet, setPreviousSnippet] = useState<SnippetModel>();
+  const [nextSnippet, setNextSnippet] = useState<SnippetModel>();
 
   const [{ start: startRecording, stop: stopRecording }, setMicrophone] =
     useState({
@@ -149,63 +145,140 @@ export function Snippet() {
     setCurrentSnippetId(snippetId);
   }, [snippetId, setCurrentSnippetId]);
 
+  useEffect(() => {
+    if (snippets) {
+      let previous: SnippetModel | undefined = undefined;
+      let next: SnippetModel | undefined = undefined;
+
+      for (let i = 0; i < snippets.length; i++) {
+        if (snippets[i].id === snippetId) {
+          previous = snippets[i - 1];
+          next = snippets[i + 1];
+        }
+      }
+
+      setPreviousSnippet(previous);
+      setNextSnippet(next);
+    }
+  }, [snippetId, snippets]);
+
   return (
     <>
-      <Flex direction={"column"} w="100%" maw={"600px"} mx={"auto"} px={24}>
-        <Box>
-          <Box>Created At: {dayjs(snippet?.createdAt).fromNow()}</Box>
-          <Box>Modified At: {dayjs(snippet?.modifiedAt).fromNow()}</Box>
-          {!!snippet?.recordedAt && (
-            <Box>Recorded At: {dayjs(snippet?.recordedAt).fromNow()}</Box>
-          )}
-          {!!snippet?.recordedAt && (
-            <Box>Processed At: {dayjs(snippet?.processedAt).fromNow()}</Box>
-          )}
-          {!!snippet?.recordedAt && (
-            <Box>Finished At: {dayjs(snippet?.finishedAt).fromNow()}</Box>
-          )}
-        </Box>
+      <Flex
+        direction={"column"}
+        w="100%"
+        maw={"600px"}
+        mih={"90vh"}
+        mah="90vh"
+        h="90vh"
+        mx={"auto"}
+        px={24}
+        justify={"space-between"}
+        align="space-between"
+      >
+        {!!previousSnippet && (
+          <SnippetForm
+            snippet={previousSnippet}
+            bookId={bookId || ""}
+            disabled={true}
+          />
+        )}
 
-        <TextInput
-          label="Label"
-          defaultValue={snippet?.label}
-          onChange={async (e) => {
-            if (snippet) {
-              await SnippetsCRUD.update(snippet?.id, {
-                label: e.currentTarget.value,
-              });
-              setFetchTimestamp(Date.now());
-            }
-          }}
-        />
-        <Textarea
-          ref={contentRef}
-          defaultValue={snippet?.content}
-          label="Content"
-          onInput={async (e) => {
-            await SnippetsCRUD.update(snippetId, {
-              content: e.currentTarget.value,
-            });
-            setFetchTimestamp(Date.now());
-          }}
-        />
-
-        <Group mt={8} justify="space-between">
+        <Flex direction={"column"} align="center" justify="center" my={42}>
           <Button
-            color="red"
-            variant="outline"
-            onClick={() => {
-              openRecordingModal();
-              startRecording();
+            variant="light"
+            onClick={async () => {
+              if (snippet) {
+                const currentSnippetSortOrder = snippet.sortOrder;
+                const previousSnippetSortOrder =
+                  previousSnippet?.sortOrder || currentSnippetSortOrder - 1;
+                const sortOrder =
+                  (currentSnippetSortOrder + previousSnippetSortOrder) / 2;
+
+                const newSnippet = await SnippetsCRUD.create({
+                  sortOrder,
+                  chapterId: snippet.chapterId,
+                  label: "New Snippet",
+                });
+
+                navigate(
+                  `/books/${bookId}/chapters/${snippet.chapterId}/snippets/${newSnippet?.id}`
+                );
+
+                startTransition(() => {
+                  setFetchTimestamp(Date.now());
+                });
+              }
             }}
           >
-            Record Audio
-            <IconMicrophone />
+            Insert Before <IconCirclePlus />
           </Button>
-          <Button color="red">
-            Delete <IconTrash />
+        </Flex>
+
+        <SnippetForm
+          snippet={snippet}
+          bookId={bookId || ""}
+          onEditLabel={async (label) => {
+            await SnippetsCRUD.update(snippetId, {
+              label,
+            });
+            startTransition(() => {
+              setFetchTimestamp(Date.now());
+            });
+          }}
+          onEditContent={async (content) => {
+            await SnippetsCRUD.update(snippetId, {
+              content,
+            });
+            startTransition(() => {
+              setFetchTimestamp(Date.now());
+            });
+          }}
+          onRecord={() => {
+            openRecordingModal();
+            startRecording();
+          }}
+          onDelete={() => {}}
+        />
+
+        <Flex direction={"column"} align="center" justify="center" my={42}>
+          <Button
+            variant="light"
+            onClick={async () => {
+              if (snippet) {
+                const currentSnippetSortOrder = snippet.sortOrder;
+                const nextSnippetSortOrder =
+                  nextSnippet?.sortOrder || currentSnippetSortOrder + 1;
+                const newSnippet = await SnippetsCRUD.create({
+                  sortOrder:
+                    (currentSnippetSortOrder + nextSnippetSortOrder) / 2,
+                  chapterId: snippet.chapterId,
+                  label: "New Snippet",
+                });
+
+                navigate(
+                  `/books/${bookId}/chapters/${snippet.chapterId}/snippets/${newSnippet?.id}`
+                );
+
+                startTransition(() => {
+                  setFetchTimestamp(Date.now());
+                });
+              }
+            }}
+          >
+            Insert After <IconCirclePlus />
           </Button>
-        </Group>
+        </Flex>
+
+        {!!nextSnippet && (
+          <SnippetForm
+            snippet={nextSnippet}
+            bookId={bookId || ""}
+            disabled={true}
+            below={true}
+          />
+        )}
+
         <Modal
           opened={recordingModalOpened}
           closeOnClickOutside={false}
