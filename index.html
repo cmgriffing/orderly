@@ -2,9 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/orderly.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React + TS</title>
+    <title>Orderly: Dictation-based book writing</title>
     <script src="/coi-serviceworker.min.js"></script>
   </head>
   <body>
@@ -17,15 +17,11 @@
 
       window.Module = {
         print: function (message) {
-          console.log("Custom Print: ", message);
-
           if (bracketRegex.test(message) && !blankAudioRegex.test(message)) {
             recentResult.push(message.replace(bracketRegex, "").trim());
           }
         },
         printErr: function (message) {
-          console.log("Custom PrintErr: ", message);
-
           if (whisperTimingRegex.test(message) && recentResult.length > 0) {
             window.dispatchEvent(
               new CustomEvent("whisperResult", {
