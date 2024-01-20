@@ -96,10 +96,13 @@ export function App() {
                 hiddenFrom="sm"
                 size="sm"
               />
-              <Flex>
-                <Text>Orderly</Text>
-                <Text c="red" ml={4}>
-                  ALPHA
+              <Flex align="center" gap={8}>
+                <img src="/orderly/orderly.svg" alt="Orderly" width={32} />
+                <Text ff="Courier New" fw={900} size="xl">
+                  Orderly
+                </Text>
+                <Text c="red" size="xs" fw={700} ml={-6} mt={-6}>
+                  <sup>ALPHA</sup>
                 </Text>
               </Flex>
             </Group>
