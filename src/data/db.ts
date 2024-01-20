@@ -5,7 +5,9 @@ import * as bookSchema from "./models/books";
 import * as chapterSchema from "./models/chapters";
 import * as snippetSchema from "./models/snippets";
 
-const { driver, sql } = new SQLocalDrizzle("database.sqlite3");
+const { driver, sql, getDatabaseFile, overwriteDatabaseFile } =
+  new SQLocalDrizzle("database.sqlite3");
+
 export const db = drizzle(driver, {
   schema: {
     ...bookSchema,
@@ -70,3 +72,9 @@ export const db = drizzle(driver, {
   await sql`INSERT OR IGNORE INTO settings(id,user_id,threads,selected_model,created_at,modified_at)
 VALUES (0,1,2,'',0,0)`;
 })();
+
+export const DBUtils = {
+  getDatabaseFile,
+  overwriteDatabaseFile,
+  sql,
+};

@@ -2,14 +2,9 @@ name: Deploy
 on:
   push:
     branches:
-      - main
+      - "!main"
 permissions:
   contents: read
-  pages: write
-  id-token: write
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
 env:
   BUILD_PATH: "." # default value when not using subfolders
   # BUILD_PATH: subfolder
@@ -50,11 +45,3 @@ jobs:
 
       - name: Build Application
         run: pnpm build
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        run: |
-          git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
-          pnpx gh-pages -d dist -u "github-actions-bot <support+actions@github.com>"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

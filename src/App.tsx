@@ -9,9 +9,12 @@ import {
   Menu,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { useEffect, useState } from "react";
+import { useEffect, useState, startTransition } from "react";
 import { Outlet, Link, useNavigate } from "react-router-dom";
-import { BookWithChapters, BooksCRUD } from "./data/repositories/books";
+import { useAtom } from "jotai";
+import { clsx } from "clsx";
+import { DBUtils } from "./data/db";
+
 import {
   IconCaretRight,
   IconCaretDown,
@@ -20,19 +23,22 @@ import {
   IconTextSize,
   IconTrash,
   IconSettings,
+  IconUpload,
+  IconDownload,
 } from "@tabler/icons-react";
 import { NodeApi, Tree } from "react-arborist";
+import { BookWithChapters, BooksCRUD } from "./data/repositories/books";
 import { ChapterModel, ChaptersCRUD } from "./data/repositories/chapters";
+
 import { CreateOrUpdateModal } from "./components/CreateOrUpdateModal";
 import { SettingsModal } from "./components/SettingsModal";
+
 import {
   currentBooks,
   currentChapter,
   currentModel,
   fetchTimestamp,
 } from "./state/main";
-import { useAtom } from "jotai";
-import { clsx } from "clsx";
 import "./App.scss";
 
 export function App() {
@@ -98,6 +104,53 @@ export function App() {
               </Flex>
             </Group>
             <Group>
+              <Button
+                variant={"outline"}
+                rightSection={<IconUpload />}
+                onClick={() => {
+                  const inputElement = document.createElement("input");
+                  inputElement.setAttribute("type", "file");
+
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  inputElement.onchange = async (e: any) => {
+                    console.log("uploading file", { e });
+                    // probably need to validate the file.
+                    try {
+                      if (e.target?.files?.[0]) {
+                        await DBUtils.overwriteDatabaseFile(e.target.files[0]);
+                        startTransition(() => {
+                          setFetchTimestamp(Date.now());
+                        });
+                      }
+                    } catch (e: unknown) {
+                      console.log("Error uploading sqlite file", e);
+                      alert(
+                        "There was an error uploading the sqlite dump file. It may be corrupted or an invalid sqlite file."
+                      );
+                    }
+                  };
+
+                  inputElement.click();
+                }}
+              >
+                Import
+              </Button>
+              <Button
+                variant={"outline"}
+                rightSection={<IconDownload />}
+                onClick={async () => {
+                  const dbFile = await DBUtils.getDatabaseFile();
+                  const aElement = document.createElement("a");
+                  aElement.setAttribute("download", "orderly.sqlite3");
+                  const href = URL.createObjectURL(dbFile);
+                  aElement.href = href;
+                  aElement.setAttribute("target", "_blank");
+                  aElement.click();
+                  URL.revokeObjectURL(href);
+                }}
+              >
+                Export
+              </Button>
               <Button
                 rightSection={<IconSettings />}
                 onClick={() => {
