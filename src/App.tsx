@@ -13,6 +13,9 @@ import { useEffect, useState, startTransition } from "react";
 import { Outlet, Link, useNavigate } from "react-router-dom";
 import { useAtom } from "jotai";
 import { clsx } from "clsx";
+import pdf from "pdfjs";
+import pdfFont from "pdfjs/font/Helvetica";
+
 import { DBUtils } from "./data/db";
 
 import {
@@ -40,6 +43,7 @@ import {
   fetchTimestamp,
 } from "./state/main";
 import "./App.scss";
+import { SnippetsQueries } from "./data/repositories/snippets";
 
 export function App() {
   const navigate = useNavigate();
@@ -232,6 +236,8 @@ export function App() {
                 chapter: ChapterModel;
               };
 
+              const book = node.data.book;
+
               return !node.isLeaf ? (
                 <Flex
                   style={style}
@@ -276,8 +282,90 @@ export function App() {
                       >
                         Add Chapter
                       </Menu.Item>
+
+                      <Menu.Item
+                        leftSection={<IconDownload />}
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          try {
+                            const doc = new pdf.Document({
+                              font: pdfFont,
+                              padding: 32,
+                            });
+
+                            // fetch chapters for book
+                            const bookContent = await Promise.all(
+                              book.chapters.map(async (chapter) => {
+                                // fetch snippets for chapter
+                                const snippets =
+                                  await SnippetsQueries.getSnippetsForChapter(
+                                    chapter.id
+                                  );
+                                const content = snippets
+                                  .filter((snippet) => !!snippet.content)
+                                  .map((snippet) => {
+                                    return `          ${snippet.content}`;
+                                  })
+                                  .join("\n");
+
+                                return {
+                                  title: chapter.label,
+                                  content,
+                                };
+                              })
+                            );
+
+                            // Compose Title page and Chapters
+                            doc.text(
+                              `${new Array(4)
+                                .fill("")
+                                .map(() => "\n")
+                                .join("")}${book.title}`,
+                              {
+                                textAlign: "center",
+                                fontSize: 42,
+                                lineHeight: 6,
+                              }
+                            );
+
+                            bookContent.forEach((chapter) => {
+                              doc.pageBreak();
+                              doc.text(`\n${chapter.title}\n\n`, {
+                                textAlign: "center",
+                                fontSize: 32,
+                                lineHeight: 2,
+                              });
+                              doc.text(chapter.content);
+                            });
+
+                            const bookContentBuffer = await doc.asBuffer();
+
+                            // Convert to blob and trigger download
+                            const aElement = document.createElement("a");
+                            aElement.setAttribute(
+                              "download",
+                              book.title + ".pdf"
+                            );
+                            const href = URL.createObjectURL(
+                              new Blob([bookContentBuffer], {
+                                type: "application/pdf",
+                              })
+                            );
+                            aElement.href = href;
+                            aElement.setAttribute("target", "_blank");
+                            aElement.click();
+                            URL.revokeObjectURL(href);
+                          } catch (e: unknown) {
+                            console.log("Error exporting to PDF: ", e);
+                          }
+                        }}
+                      >
+                        Export to PDF
+                      </Menu.Item>
+
                       <Menu.Item
                         leftSection={<IconTrash />}
+                        color="red"
                         onClick={async (e) => {
                           e.stopPropagation();
                           // TODO: Delete snippets, chapters, and book

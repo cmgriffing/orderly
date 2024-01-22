@@ -32,6 +32,7 @@
     "drizzle-zod": "^0.5.1",
     "jotai": "^2.6.1",
     "p-debounce": "^4.0.0",
+    "pdfjs": "^2.5.3",
     "react": "^18.2.0",
     "react-arborist": "^3.4.0",
     "react-dom": "^18.2.0",
@@ -57,6 +58,7 @@
     "ts-node": "^10.9.2",
     "tsx": "^4.7.0",
     "typescript": "^5.2.2",
-    "vite": "^5.0.8"
+    "vite": "^5.0.8",
+    "vite-plugin-node-polyfills": "^0.19.0"
   }
 }

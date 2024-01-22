@@ -71,6 +71,15 @@ export const db = drizzle(driver, {
 
   await sql`INSERT OR IGNORE INTO settings(id,user_id,threads,selected_model,created_at,modified_at)
 VALUES (0,1,2,'',0,0)`;
+
+  // get available books
+  // if empty, run seed process
+
+  // seed book
+
+  // seed chapters for book
+
+  // seed snippets for chapters
 })();
 
 export const DBUtils = {
