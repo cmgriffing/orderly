@@ -1,4 +1,3 @@
-import React from "react";
 import { Loader, Flex } from "@mantine/core";
 
 import "./CountingLoader.scss";
