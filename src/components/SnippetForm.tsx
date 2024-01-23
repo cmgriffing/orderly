@@ -22,12 +22,13 @@ dayjs.extend(relativeTime);
 
 import { SnippetModel } from "../data/repositories/snippets";
 
-import "./SnippetForm.scss";
 import {
   SnippetStatus,
   SnippetStatusIcon,
   getSnippetStatus,
 } from "./SnippetStatusIcon";
+
+import "./SnippetForm.scss";
 
 interface BaseSnippetProps {
   bookId: string;
@@ -72,10 +73,6 @@ export function SnippetForm({
     setLabelValue(snippet?.label || "");
     setContentValue(snippet?.content || "");
   }, [snippet]);
-
-  console.log({ status });
-
-  console.log({ snippet });
 
   const contents = (
     <>

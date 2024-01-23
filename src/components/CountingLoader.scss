@@ -1,0 +1,12 @@
+.counting-loader {
+  position: relative;
+
+  .count {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 6px;
+    left: 0;
+    font-weight: bold;
+  }
+}
