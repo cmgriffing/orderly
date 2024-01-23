@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, startTransition } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Flex, Button, Modal, Text, Loader } from "@mantine/core";
+import { Flex, Button, Modal, Text } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useAtom } from "jotai";
 import {
@@ -13,6 +13,8 @@ import {
 import { IconCirclePlus } from "@tabler/icons-react";
 import { SnippetModel, SnippetsCRUD } from "../data/repositories/snippets";
 import { SnippetForm } from "../components/SnippetForm";
+import { CountingLoader } from "../components/CountingLoader";
+
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 dayjs.extend(relativeTime);
@@ -45,6 +47,8 @@ export function Snippet() {
   const contentRef = useRef<HTMLTextAreaElement>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingDuration, setProcessingDuration] = useState(0);
   const [whisper] = useAtom(whisperInstance);
   const [audio, setAudio] = useState<Float32Array>(new Float32Array());
   const [audioBlob, setAudioBlob] = useState<Blob>();
@@ -52,6 +56,15 @@ export function Snippet() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [previousSnippet, setPreviousSnippet] = useState<SnippetModel>();
   const [nextSnippet, setNextSnippet] = useState<SnippetModel>();
+
+  const [
+    recordingModalOpened,
+    { open: openRecordingModal, close: closeRecordingModal },
+  ] = useDisclosure(false);
+  const [
+    processingModalOpened,
+    { open: openProcessingModal, close: closeProcessingModal },
+  ] = useDisclosure(false);
 
   const [{ start: startRecording, stop: stopRecording }, setMicrophone] =
     useState({
@@ -75,7 +88,15 @@ export function Snippet() {
           setAudioBlob(newAudioBlob);
           const result = await whisper?.processAudio(newAudio);
 
-          console.log({ result });
+          if (result !== 0) {
+            // non-zero exit code found. report problem to user
+            // TODO: Make this something nicer than an alert
+            alert("Error processing audio");
+          } else {
+            setIsProcessing(true);
+            openProcessingModal();
+            // recommend refresh if taking too long and advise fine tuning threads
+          }
         },
       })
     );
@@ -106,6 +127,9 @@ export function Snippet() {
         content: event.detail,
         processedAt: Date.now(),
       });
+
+      setIsProcessing(false);
+      closeProcessingModal();
 
       startTransition(() => {
         setFetchTimestamp(Date.now());
@@ -140,10 +164,22 @@ export function Snippet() {
     }
   }, [isRecording]);
 
-  const [
-    recordingModalOpened,
-    { open: openRecordingModal, close: closeRecordingModal },
-  ] = useDisclosure(false);
+  useEffect(() => {
+    if (isProcessing) {
+      const processingStartedAt = Date.now();
+      setProcessingDuration(0);
+
+      const processingInterval = setInterval(() => {
+        setProcessingDuration(
+          Math.floor((Date.now() - processingStartedAt) / 1000)
+        );
+      }, 1000);
+
+      return () => {
+        clearInterval(processingInterval);
+      };
+    }
+  }, [isProcessing]);
 
   useEffect(() => {
     setCurrentSnippetId(snippetId);
@@ -304,9 +340,8 @@ export function Snippet() {
               <Text size="xl" fw="bold">
                 Recording
               </Text>
-              <Loader color="red" />
             </Flex>
-            {isRecording && <Flex>{recordingDuration} seconds</Flex>}
+            <CountingLoader count={recordingDuration} color="red" />
             <Button
               color="red"
               onClick={() => {
@@ -319,6 +354,42 @@ export function Snippet() {
             >
               Stop Recording
             </Button>
+          </Flex>
+        </Modal>
+
+        <Modal
+          opened={processingModalOpened}
+          closeOnClickOutside={false}
+          closeOnEscape={false}
+          withCloseButton={false}
+          onClose={() => {
+            // we shouldn't actually be able to get to here
+            closeProcessingModal();
+          }}
+          centered
+          size="auto"
+          padding={24}
+        >
+          <Flex direction="column" align="center" justify="center" gap={20}>
+            <Flex align="center" justify="center" gap={12}>
+              <Text size="xl" fw="bold">
+                Processing Audio
+              </Text>
+            </Flex>
+            <CountingLoader color="blue" count={processingDuration} />
+
+            {recordingDuration + 20 < processingDuration && (
+              <Flex maw={"300px"}>
+                <Text color="red">
+                  This is taking longer than expected. You may want to fine tune
+                  the amount of threads used by Whisper. It will often be
+                  fastest with a couple less than the totally available cores.
+                </Text>
+              </Flex>
+            )}
+            <Flex maw={"300px"}>
+              If you would like to cancel the process, please refresh the page.
+            </Flex>
           </Flex>
         </Modal>
         {/* DEBUG ELEMENTS */}
