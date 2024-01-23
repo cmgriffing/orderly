@@ -9,7 +9,8 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "models": "tsx scripts/get-models.ts",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist",
+    "migration:new": "tsx scripts/migration-new.ts"
   },
   "dependencies": {
     "@mantine/core": "^7.3.2",

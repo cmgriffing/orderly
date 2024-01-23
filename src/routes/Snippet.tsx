@@ -380,7 +380,7 @@ export function Snippet() {
 
             {recordingDuration + 20 < processingDuration && (
               <Flex maw={"300px"}>
-                <Text color="red">
+                <Text c="red">
                   This is taking longer than expected. You may want to fine tune
                   the amount of threads used by Whisper. It will often be
                   fastest with a couple less than the totally available cores.
