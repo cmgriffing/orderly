@@ -9,8 +9,10 @@ import * as snippetSchema from "./models/snippets";
 
 import { RuntimeMigrationProvider } from "./migrations/provider";
 
+const dbFileName = "database.sqlite3";
+
 const { driver, sql, getDatabaseFile, overwriteDatabaseFile } =
-  new SQLocalDrizzle("database.sqlite3");
+  new SQLocalDrizzle(dbFileName);
 
 export const db = drizzle(driver, {
   schema: {
@@ -20,7 +22,7 @@ export const db = drizzle(driver, {
   },
 });
 
-const { dialect } = new SQLocalKysely("database.sqlite3");
+const { dialect } = new SQLocalKysely(dbFileName);
 const kyselyDb = new Kysely({
   dialect,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -33,33 +35,23 @@ const migrator = new Migrator({
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (window as any).resetDB = async function () {
-  await sql`DROP TABLE IF EXISTS books`;
-  await sql`DROP TABLE IF EXISTS chapters`;
-  await sql`DROP TABLE IF EXISTS snippets`;
-  await sql`DROP TABLE IF EXISTS settings`;
+  // await sql`DROP TABLE IF EXISTS books`;
+  // await sql`DROP TABLE IF EXISTS chapters`;
+  // await sql`DROP TABLE IF EXISTS snippets`;
+  // await sql`DROP TABLE IF EXISTS settings`;
+  await migrator.migrateDown();
+  await kyselyDb.destroy();
+  (await navigator.storage.getDirectory()).removeEntry(dbFileName);
 };
 
-// IIFE to make sure that the schema is created before the app starts
-(async () => {
+async function seed() {
   await sql`PRAGMA foreign_keys = ON;`;
-
-  await sql`INSERT OR IGNORE INTO settings(id,user_id,threads,selected_model,created_at,modified_at)
-VALUES (0,1,2,'',0,0)`;
-
   await migrator.migrateToLatest();
-
-  // get available books
-  // if empty, run seed process
-
-  // seed book
-
-  // seed chapters for book
-
-  // seed snippets for chapters
-})();
+}
 
 export const DBUtils = {
   getDatabaseFile,
   overwriteDatabaseFile,
   sql,
+  seed,
 };

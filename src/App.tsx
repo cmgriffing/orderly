@@ -37,6 +37,7 @@ import { CreateOrUpdateModal } from "./components/CreateOrUpdateModal";
 import { SettingsModal } from "./components/SettingsModal";
 
 import {
+  appReady,
   currentBooks,
   currentChapter,
   currentModel,
@@ -70,15 +71,28 @@ export function App() {
 
   const [currentBook, setCurrentBook] = useState<BookWithChapters>();
 
-  const [books] = useAtom(currentBooks);
+  const [ready, setAppReady] = useAtom(appReady);
   const [, setFetchTimestamp] = useAtom(fetchTimestamp);
+  const [books] = useAtom(currentBooks);
   const [whisperModel] = useAtom(currentModel);
 
   useEffect(() => {
-    if (!whisperModel) {
+    async function initialize() {
+      await DBUtils.seed();
+      startTransition(() => {
+        setAppReady(true);
+        setFetchTimestamp(Date.now());
+      });
+    }
+
+    initialize();
+  }, [setAppReady, setFetchTimestamp]);
+
+  useEffect(() => {
+    if (!whisperModel && ready) {
       openSettingsModal();
     }
-  }, [whisperModel, openSettingsModal]);
+  }, [whisperModel, openSettingsModal, ready]);
 
   return (
     <>
@@ -265,7 +279,6 @@ export function App() {
                         leftSection={<IconTextSize />}
                         onClick={(e) => {
                           e.stopPropagation();
-                          console.log("hmm", node.data.book);
                           setCurrentBook(node.data.book);
                           openEditBookModal();
                         }}

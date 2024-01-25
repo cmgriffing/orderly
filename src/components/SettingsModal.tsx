@@ -43,11 +43,11 @@ export function SettingsModal({
   const [threads, setThreads] = useState(2);
 
   useEffect(() => {
-    if (settings.selectedModel) {
+    if (settings?.selectedModel) {
       setSelectedModel(settings.selectedModel as WhisperModelName);
     }
 
-    if (settings.threads) {
+    if (settings?.threads) {
       setThreads(settings.threads);
     }
   }, [settings]);
@@ -80,6 +80,10 @@ export function SettingsModal({
 
           if (!whisperModelLoaded) {
             console.log("Not loaded");
+            return;
+          }
+
+          if (!settings) {
             return;
           }
 
