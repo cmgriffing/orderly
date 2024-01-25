@@ -1,1 +1,1 @@
-export * as migration20240123T231528004Z from "./2024-01-23T23:15:28.004Z-initial-schema.ts";
+export * as migration20240123T231528004Z from "./2024-01-23T231528.004Z-initial-schema.ts";
