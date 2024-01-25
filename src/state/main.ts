@@ -6,12 +6,18 @@ import { SettingsQueries } from "../data/repositories/settings";
 import { loadOrGetModel } from "../utils/model-data";
 import { WhisperModelName } from "../types";
 
+export const appReady = atom(false);
 export const fetchTimestamp = atom(0);
 
 // Books
 
 export const currentBooks = atom(async (get) => {
   get(fetchTimestamp);
+  const ready = get(appReady);
+  if (!ready) {
+    return [];
+  }
+
   return BooksQueries.getBooksWithChapters();
 });
 export const currentBook = atom<BookWithChapters | undefined>(undefined);
@@ -21,13 +27,27 @@ export const currentBook = atom<BookWithChapters | undefined>(undefined);
 export const currentChapterId = atom<number | undefined>(undefined);
 export const currentChapter = atom((get) => {
   get(fetchTimestamp);
+  const ready = get(appReady);
+  if (!ready) {
+    return;
+  }
+
   const chapterId = get(currentChapterId);
-  return ChaptersCRUD.read(chapterId || -1);
+  if (chapterId === 0 || chapterId) {
+    return ChaptersCRUD.read(chapterId || -1);
+  }
 });
 export const currentSnippets = atom((get) => {
   get(fetchTimestamp);
+  const ready = get(appReady);
+  if (!ready) {
+    return [];
+  }
+
   const chapterId = get(currentChapterId);
-  return SnippetsQueries.getSnippetsForChapter(chapterId || -1);
+  if (chapterId === 0 || chapterId) {
+    return SnippetsQueries.getSnippetsForChapter(chapterId);
+  }
 });
 
 // Snippets
@@ -35,14 +55,26 @@ export const currentSnippets = atom((get) => {
 export const currentSnippetId = atom<number | undefined>(undefined);
 export const currentSnippet = atom((get) => {
   get(fetchTimestamp);
+  const ready = get(appReady);
+  if (!ready) {
+    return;
+  }
+
   const snippetId = get(currentSnippetId);
-  return SnippetsCRUD.read(snippetId || -1);
+  if (snippetId === 0 || snippetId) {
+    return SnippetsCRUD.read(snippetId);
+  }
 });
 
 // Settings
 
 export const currentSettings = atom(async (get) => {
   get(fetchTimestamp);
+  const ready = get(appReady);
+  if (!ready) {
+    return;
+  }
+
   return SettingsQueries.getSettingsForUser();
 });
 
@@ -52,6 +84,10 @@ declare const Module: any;
 export const currentModel = atom(
   async (get) => {
     const settings = await get(currentSettings);
+    if (!settings) {
+      return;
+    }
+
     return loadOrGetModel(settings.selectedModel as WhisperModelName, () => {});
   },
   (_get, _set, update) => {
@@ -61,6 +97,9 @@ export const currentModel = atom(
 export const whisperInstance = atom(async (get) => {
   const model = await get(currentModel);
   const settings = await get(currentSettings);
+  if (!settings) {
+    return;
+  }
 
   if (model) {
     try {

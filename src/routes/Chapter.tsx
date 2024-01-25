@@ -115,7 +115,7 @@ export function Chapter() {
           </Menu>
         </Flex>
 
-        {snippets.length > 0 && (
+        {snippets?.length && snippets?.length > 0 && (
           <Tree
             rowHeight={36}
             onMove={async (e) => {
