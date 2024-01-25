@@ -51,7 +51,11 @@ export async function down(db: Kysely<any>): Promise<void> {
 `;
 
 fs.writeFileSync(
-  path.resolve(__dirname, "../src/data/migrations", `${date}-${name}.ts`),
+  path.resolve(
+    __dirname,
+    "../src/data/migrations",
+    `${date.replaceAll(":", "")}-${name}.ts`
+  ),
   template
 );
 
@@ -60,5 +64,5 @@ fs.appendFileSync(
   `\nexport * as migration${date
     .replaceAll("-", "")
     .replaceAll(":", "")
-    .replaceAll(".", "")} from "./${date}-${name}.ts"`
+    .replaceAll(".", "")} from "./${date.replaceAll(":", "")}-${name}.ts"`
 );
