@@ -32,6 +32,7 @@
     "drizzle-orm": "^0.29.2",
     "drizzle-zod": "^0.5.1",
     "jotai": "^2.6.1",
+    "kysely": "^0.27.2",
     "p-debounce": "^4.0.0",
     "pdfjs": "^2.5.3",
     "react": "^18.2.0",
