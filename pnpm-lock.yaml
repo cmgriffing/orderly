@@ -51,16 +51,13 @@ dependencies:
     version: 2.0.0
   drizzle-orm:
     specifier: ^0.29.2
-    version: 0.29.2(@types/react@18.2.46)(expo-sqlite@13.2.0)(kysely@0.27.2)(react@18.2.0)
+    version: 0.29.2(@types/react@18.2.46)(expo-sqlite@13.2.0)(react@18.2.0)
   drizzle-zod:
     specifier: ^0.5.1
     version: 0.5.1(drizzle-orm@0.29.2)(zod@3.22.4)
   jotai:
     specifier: ^2.6.1
     version: 2.6.1(@types/react@18.2.46)(react@18.2.0)
-  kysely:
-    specifier: ^0.27.2
-    version: 0.27.2
   p-debounce:
     specifier: ^4.0.0
     version: 4.0.0
@@ -4368,7 +4365,7 @@ packages:
     engines: {node: '>=12'}
     dev: false
 
-  /drizzle-orm@0.29.2(@types/react@18.2.46)(expo-sqlite@13.2.0)(kysely@0.27.2)(react@18.2.0):
+  /drizzle-orm@0.29.2(@types/react@18.2.46)(expo-sqlite@13.2.0)(react@18.2.0):
     resolution: {integrity: sha512-BhwCwuSQqUoLVc7wtgIkuWexY127Z9+yDbuXU7QWZbMC2XE48jecvAThW9apQaDoaxQmwQ+ObyPfPb4zL4Bgsw==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
@@ -4435,7 +4432,6 @@ packages:
     dependencies:
       '@types/react': 18.2.46
       expo-sqlite: 13.2.0(expo@49.0.21)
-      kysely: 0.27.2
       react: 18.2.0
     dev: false
 
@@ -4445,7 +4441,7 @@ packages:
       drizzle-orm: '>=0.23.13'
       zod: '*'
     dependencies:
-      drizzle-orm: 0.29.2(@types/react@18.2.46)(expo-sqlite@13.2.0)(kysely@0.27.2)(react@18.2.0)
+      drizzle-orm: 0.29.2(@types/react@18.2.46)(expo-sqlite@13.2.0)(react@18.2.0)
       zod: 3.22.4
     dev: false
 
@@ -5733,11 +5729,6 @@ packages:
 
   /kysely@0.26.3:
     resolution: {integrity: sha512-yWSgGi9bY13b/W06DD2OCDDHQmq1kwTGYlQ4wpZkMOJqMGCstVCFIvxCCVG4KfY1/3G0MhDAcZsip/Lw8/vJWw==}
-    engines: {node: '>=14.0.0'}
-    dev: false
-
-  /kysely@0.27.2:
-    resolution: {integrity: sha512-DmRvEfiR/NLpgsTbSxma2ldekhsdcd65+MNiKXyd/qj7w7X5e3cLkXxcj+MypsRDjPhHQ/CD5u3Eq1sBYzX0bw==}
     engines: {node: '>=14.0.0'}
     dev: false
 
