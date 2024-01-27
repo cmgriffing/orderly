@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import { BookWithChapters, BooksQueries } from "../data/repositories/books";
+import { BooksCRUD, BooksQueries } from "../data/repositories/books";
 import { ChaptersCRUD } from "../data/repositories/chapters";
 import { SnippetsCRUD, SnippetsQueries } from "../data/repositories/snippets";
 import { SettingsQueries } from "../data/repositories/settings";
@@ -22,7 +22,7 @@ export const currentBooks = atom(async (get) => {
 });
 
 export const currentBookId = atom<number | undefined>(undefined);
-export const currentBook = atom<BookWithChapters | undefined>((get) => {
+export const currentBook = atom(async (get) => {
   get(fetchTimestamp);
   const bookId = get(currentBookId);
   const ready = get(appReady);
@@ -31,14 +31,14 @@ export const currentBook = atom<BookWithChapters | undefined>((get) => {
   }
 
   if (bookId === 0 || bookId) {
-    return ChaptersCRUD.read(bookId);
+    return BooksCRUD.read(bookId);
   }
 });
 
 // Chapters
 
 export const currentChapterId = atom<number | undefined>(undefined);
-export const currentChapter = atom((get) => {
+export const currentChapter = atom(async (get) => {
   get(fetchTimestamp);
   const chapterId = get(currentChapterId);
   const ready = get(appReady);
@@ -50,7 +50,7 @@ export const currentChapter = atom((get) => {
     return ChaptersCRUD.read(chapterId);
   }
 });
-export const currentSnippets = atom((get) => {
+export const currentSnippets = atom(async (get) => {
   get(fetchTimestamp);
   const ready = get(appReady);
   if (!ready) {
@@ -66,7 +66,7 @@ export const currentSnippets = atom((get) => {
 // Snippets
 
 export const currentSnippetId = atom<number | undefined>(undefined);
-export const currentSnippet = atom((get) => {
+export const currentSnippet = atom(async (get) => {
   get(fetchTimestamp);
   const snippetId = get(currentSnippetId);
   const ready = get(appReady);
