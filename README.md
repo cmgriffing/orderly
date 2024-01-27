@@ -4,9 +4,29 @@ Orderly is a proof-of-concept tool for helping you write books. It uses whisper.
 
 This app was actually inspired by an episode of Columbo that had an author dictate his novel chapters into a tape recorder and then send them off to be typed up.
 
+<!-- Image or video of UI -->
+
+## Features
+
+- Multiple book support
+- Local-first
+- Voice to Text
+- Import/Export
+- Render to PDF
+
+## WASM: WAT?
+
+This application uses SQLite and Whisper.cpp directly in the browser. This means that the code is compiled to WebAssembly and then executed in the browser at runtime without any server-side logic or communication.
+
+This has the benefit of giving you full ownership over your data. However, it also means that it is harder to take resume your usage on different machines. There is an import/export process but that involves several manual steps.
+
+Another tradeoff for this amount of local-first functionality is that the app's bundle size is a bit larger than you would expect for a website. For a web application like Orderly, we think this is a fair tradeoff.
+
 ## Contributing
 
-Orderly is 100% open source and welcomes contributors. As a proof-of-concept not every fix or feature issue will make into the core codebase, but contributors are heavily encouraged to fork it and make it their own.
+Orderly is 100% open source and welcomes contributors. Please feel free to report any bugs or feature requests in the Issues section of this GitHub repository.
+
+As a proof-of-concept, not every fix or feature issue will make into the core codebase, but contributors are heavily encouraged to fork it and make it their own.
 
 ### Installation
 

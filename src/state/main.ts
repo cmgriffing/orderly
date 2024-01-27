@@ -20,21 +20,34 @@ export const currentBooks = atom(async (get) => {
 
   return BooksQueries.getBooksWithChapters();
 });
-export const currentBook = atom<BookWithChapters | undefined>(undefined);
+
+export const currentBookId = atom<number | undefined>(undefined);
+export const currentBook = atom<BookWithChapters | undefined>((get) => {
+  get(fetchTimestamp);
+  const bookId = get(currentBookId);
+  const ready = get(appReady);
+  if (!ready) {
+    return;
+  }
+
+  if (bookId === 0 || bookId) {
+    return ChaptersCRUD.read(bookId);
+  }
+});
 
 // Chapters
 
 export const currentChapterId = atom<number | undefined>(undefined);
 export const currentChapter = atom((get) => {
   get(fetchTimestamp);
+  const chapterId = get(currentChapterId);
   const ready = get(appReady);
   if (!ready) {
     return;
   }
 
-  const chapterId = get(currentChapterId);
   if (chapterId === 0 || chapterId) {
-    return ChaptersCRUD.read(chapterId || -1);
+    return ChaptersCRUD.read(chapterId);
   }
 });
 export const currentSnippets = atom((get) => {
@@ -55,12 +68,12 @@ export const currentSnippets = atom((get) => {
 export const currentSnippetId = atom<number | undefined>(undefined);
 export const currentSnippet = atom((get) => {
   get(fetchTimestamp);
+  const snippetId = get(currentSnippetId);
   const ready = get(appReady);
   if (!ready) {
     return;
   }
 
-  const snippetId = get(currentSnippetId);
   if (snippetId === 0 || snippetId) {
     return SnippetsCRUD.read(snippetId);
   }

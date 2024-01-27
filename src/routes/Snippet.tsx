@@ -17,6 +17,7 @@ import { CountingLoader } from "../components/CountingLoader";
 
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import { NotFoundPageWrapper } from "../components/NotFoundPageWrapper";
 dayjs.extend(relativeTime);
 
 function blobToDataURL(blob: Blob): Promise<string> {
@@ -203,7 +204,18 @@ export function Snippet() {
   }, [snippetId, snippets]);
 
   return (
-    <>
+    <NotFoundPageWrapper
+      hasEntity={!!snippet}
+      entityName="Snippet"
+      notFoundContent={
+        <>
+          <Text w="300px">
+            The snippet could not be found. You can create a new one using the
+            chapters's menu in the secondary sidebar.
+          </Text>
+        </>
+      }
+    >
       <Flex
         direction={"column"}
         w="100%"
@@ -463,7 +475,7 @@ export function Snippet() {
           </>
         )} */}
       </Flex>
-    </>
+    </NotFoundPageWrapper>
   );
 }
 

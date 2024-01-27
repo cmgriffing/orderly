@@ -197,216 +197,235 @@ export function App() {
               </Button>
             </Group>
           </Flex>
-          <Tree
-            rowHeight={36}
-            onMove={async (e) => {
-              if (!e?.parentNode?.data.book?.chapters) {
-                return;
-              }
 
-              let newSortOrder = 0;
-              if (e.index === 0) {
-                newSortOrder =
-                  (e?.parentNode?.data.book?.chapters?.[e.index].sortOrder ||
-                    0) - 1;
-              } else if (e.index >= e?.parentNode?.data.book?.chapters.length) {
-                newSortOrder =
-                  e?.parentNode?.data.book?.chapters?.[e.index - 1].sortOrder +
-                  1;
-              } else {
-                newSortOrder =
-                  ((e?.parentNode?.data.book?.chapters?.[e.index - 1]
-                    .sortOrder ||
-                    e?.parentNode?.data.book?.chapters?.length - 1) +
+          {!!books.length && (
+            <Tree
+              rowHeight={36}
+              onMove={async (e) => {
+                if (!e?.parentNode?.data.book?.chapters) {
+                  return;
+                }
+
+                let newSortOrder = 0;
+                if (e.index === 0) {
+                  newSortOrder =
                     (e?.parentNode?.data.book?.chapters?.[e.index].sortOrder ||
-                      e?.parentNode?.data.book?.chapters?.length)) /
-                  2;
-              }
+                      0) - 1;
+                } else if (
+                  e.index >= e?.parentNode?.data.book?.chapters.length
+                ) {
+                  newSortOrder =
+                    e?.parentNode?.data.book?.chapters?.[e.index - 1]
+                      .sortOrder + 1;
+                } else {
+                  newSortOrder =
+                    ((e?.parentNode?.data.book?.chapters?.[e.index - 1]
+                      .sortOrder ||
+                      e?.parentNode?.data.book?.chapters?.length - 1) +
+                      (e?.parentNode?.data.book?.chapters?.[e.index]
+                        .sortOrder ||
+                        e?.parentNode?.data.book?.chapters?.length)) /
+                    2;
+                }
 
-              const nodeData = e.dragNodes[0].data as unknown as {
-                chapter: ChapterModel;
-              };
+                const nodeData = e.dragNodes[0].data as unknown as {
+                  chapter: ChapterModel;
+                };
 
-              // this is wrong. Updating every node would be easy enough. Might be better to manage a prev/next field
-              await ChaptersCRUD.update(nodeData.chapter.id, {
-                sortOrder: newSortOrder,
-              });
+                // this is wrong. Updating every node would be easy enough. Might be better to manage a prev/next field
+                await ChaptersCRUD.update(nodeData.chapter.id, {
+                  sortOrder: newSortOrder,
+                });
 
-              // fetchBooks();
-              setFetchTimestamp(Date.now());
-            }}
-            data={books.map((book) => ({
-              book,
-              id: `book${book.id}`,
-              chapters: book.chapters.map((chapter) => ({
-                chapter,
-                id: `chapter${chapter.id}`,
-              })),
-            }))}
-            childrenAccessor={"chapters"}
-          >
-            {({ node, style, dragHandle }) => {
-              const nodeData = node.data as unknown as {
-                chapter: ChapterModel;
-              };
+                // fetchBooks();
+                setFetchTimestamp(Date.now());
+              }}
+              data={books.map((book) => ({
+                book,
+                id: `book${book.id}`,
+                chapters: book.chapters.map((chapter: ChapterModel) => ({
+                  chapter,
+                  id: `chapter${chapter.id}`,
+                })),
+              }))}
+              childrenAccessor={"chapters"}
+            >
+              {({ node, style, dragHandle }) => {
+                const nodeData = node.data as unknown as {
+                  chapter: ChapterModel;
+                };
 
-              const book = node.data.book;
+                const book = node.data.book;
 
-              return !node.isLeaf ? (
-                <Flex
-                  style={style}
-                  justify={"space-between"}
-                  pr={32}
-                  onClick={() => node.isInternal && node.toggle()}
-                >
-                  <Flex>
-                    <FolderArrow node={node} />
-                    {node.data.book.title}
-                  </Flex>
-                  <Menu shadow="md">
-                    <Menu.Target>
-                      <ActionIcon
-                        variant="transparent"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                        }}
-                      >
-                        <IconDots />
-                      </ActionIcon>
-                    </Menu.Target>
-                    <Menu.Dropdown>
-                      <Menu.Item
-                        leftSection={<IconTextSize />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setCurrentBook(node.data.book);
-                          openEditBookModal();
-                        }}
-                      >
-                        Rename
-                      </Menu.Item>
-                      <Menu.Item
-                        leftSection={<IconPlus />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setCurrentBook(node.data.book);
-                          openCreateChapterModal();
-                        }}
-                      >
-                        Add Chapter
-                      </Menu.Item>
+                return !node.isLeaf ? (
+                  <Flex direction={"column"}>
+                    <Flex
+                      style={style}
+                      justify={"space-between"}
+                      pr={32}
+                      onClick={() => node.isInternal && node.toggle()}
+                    >
+                      <Flex>
+                        <FolderArrow node={node} />
+                        {node.data.book.title}
+                      </Flex>
+                      <Menu shadow="md">
+                        <Menu.Target>
+                          <ActionIcon
+                            variant="transparent"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                            }}
+                          >
+                            <IconDots />
+                          </ActionIcon>
+                        </Menu.Target>
+                        <Menu.Dropdown>
+                          <Menu.Item
+                            leftSection={<IconTextSize />}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setCurrentBook(node.data.book);
+                              openEditBookModal();
+                            }}
+                          >
+                            Rename
+                          </Menu.Item>
+                          <Menu.Item
+                            leftSection={<IconPlus />}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setCurrentBook(node.data.book);
+                              openCreateChapterModal();
+                            }}
+                          >
+                            Add Chapter
+                          </Menu.Item>
 
-                      <Menu.Item
-                        leftSection={<IconDownload />}
-                        onClick={async (e) => {
-                          e.stopPropagation();
-                          try {
-                            const doc = new pdf.Document({
-                              font: pdfFont,
-                              padding: 32,
-                            });
+                          <Menu.Item
+                            leftSection={<IconDownload />}
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              try {
+                                const doc = new pdf.Document({
+                                  font: pdfFont,
+                                  padding: 32,
+                                });
 
-                            // fetch chapters for book
-                            const bookContent = await Promise.all(
-                              book.chapters.map(async (chapter) => {
-                                // fetch snippets for chapter
-                                const snippets =
-                                  await SnippetsQueries.getSnippetsForChapter(
-                                    chapter.id
-                                  );
-                                const content = snippets
-                                  .filter((snippet) => !!snippet.content)
-                                  .map((snippet) => {
-                                    return `          ${snippet.content}`;
+                                // fetch chapters for book
+                                const bookContent = await Promise.all(
+                                  book.chapters.map(async (chapter) => {
+                                    // fetch snippets for chapter
+                                    const snippets =
+                                      await SnippetsQueries.getSnippetsForChapter(
+                                        chapter.id
+                                      );
+                                    const content = snippets
+                                      .filter((snippet) => !!snippet.content)
+                                      .map((snippet) => {
+                                        return `          ${snippet.content}`;
+                                      })
+                                      .join("\n");
+
+                                    return {
+                                      title: chapter.label,
+                                      content,
+                                    };
                                   })
-                                  .join("\n");
+                                );
 
-                                return {
-                                  title: chapter.label,
-                                  content,
-                                };
-                              })
-                            );
+                                // Compose Title page and Chapters
+                                doc.text(
+                                  `${new Array(4)
+                                    .fill("")
+                                    .map(() => "\n")
+                                    .join("")}${book.title}`,
+                                  {
+                                    textAlign: "center",
+                                    fontSize: 42,
+                                    lineHeight: 6,
+                                  }
+                                );
 
-                            // Compose Title page and Chapters
-                            doc.text(
-                              `${new Array(4)
-                                .fill("")
-                                .map(() => "\n")
-                                .join("")}${book.title}`,
-                              {
-                                textAlign: "center",
-                                fontSize: 42,
-                                lineHeight: 6,
+                                bookContent.forEach((chapter) => {
+                                  doc.pageBreak();
+                                  doc.text(`\n${chapter.title}\n\n`, {
+                                    textAlign: "center",
+                                    fontSize: 32,
+                                    lineHeight: 2,
+                                  });
+                                  doc.text(chapter.content);
+                                });
+
+                                const bookContentBuffer = await doc.asBuffer();
+
+                                // Convert to blob and trigger download
+                                const aElement = document.createElement("a");
+                                aElement.setAttribute(
+                                  "download",
+                                  book.title + ".pdf"
+                                );
+                                const href = URL.createObjectURL(
+                                  new Blob([bookContentBuffer], {
+                                    type: "application/pdf",
+                                  })
+                                );
+                                aElement.href = href;
+                                aElement.setAttribute("target", "_blank");
+                                aElement.click();
+                                URL.revokeObjectURL(href);
+                              } catch (e: unknown) {
+                                console.log("Error exporting to PDF: ", e);
                               }
-                            );
+                            }}
+                          >
+                            Export to PDF
+                          </Menu.Item>
 
-                            bookContent.forEach((chapter) => {
-                              doc.pageBreak();
-                              doc.text(`\n${chapter.title}\n\n`, {
-                                textAlign: "center",
-                                fontSize: 32,
-                                lineHeight: 2,
-                              });
-                              doc.text(chapter.content);
-                            });
+                          <Menu.Item
+                            leftSection={<IconTrash />}
+                            color="red"
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              // TODO: Delete snippets, chapters, and book
 
-                            const bookContentBuffer = await doc.asBuffer();
+                              await BooksCRUD.delete(node.data.book.id);
 
-                            // Convert to blob and trigger download
-                            const aElement = document.createElement("a");
-                            aElement.setAttribute(
-                              "download",
-                              book.title + ".pdf"
-                            );
-                            const href = URL.createObjectURL(
-                              new Blob([bookContentBuffer], {
-                                type: "application/pdf",
-                              })
-                            );
-                            aElement.href = href;
-                            aElement.setAttribute("target", "_blank");
-                            aElement.click();
-                            URL.revokeObjectURL(href);
-                          } catch (e: unknown) {
-                            console.log("Error exporting to PDF: ", e);
-                          }
-                        }}
-                      >
-                        Export to PDF
-                      </Menu.Item>
-
-                      <Menu.Item
-                        leftSection={<IconTrash />}
-                        color="red"
-                        onClick={async (e) => {
-                          e.stopPropagation();
-                          // TODO: Delete snippets, chapters, and book
-
-                          await BooksCRUD.delete(node.data.book.id);
-
-                          setFetchTimestamp(Date.now());
-                        }}
-                      >
-                        Delete
-                      </Menu.Item>
-                    </Menu.Dropdown>
-                  </Menu>
-                </Flex>
-              ) : (
-                <div ref={dragHandle} style={style}>
-                  <Link
-                    to={`/books/${nodeData.chapter.bookId}/chapters/${nodeData.chapter.id}`}
-                    className={clsx("tree-link", {
-                      selected: selectedChapter?.id === nodeData.chapter.id,
-                    })}
-                  >
-                    {nodeData.chapter.label}
-                  </Link>
-                </div>
-              );
-            }}
-          </Tree>
+                              setFetchTimestamp(Date.now());
+                            }}
+                          >
+                            Delete
+                          </Menu.Item>
+                        </Menu.Dropdown>
+                      </Menu>
+                    </Flex>
+                    {!book.chapters.length && ready && (
+                      <Flex px="2rem" justify="center" align="center">
+                        Chapters not found. You can create one using the menu
+                        above.
+                      </Flex>
+                    )}
+                  </Flex>
+                ) : (
+                  <div ref={dragHandle} style={style}>
+                    <Link
+                      to={`/books/${nodeData.chapter.bookId}/chapters/${nodeData.chapter.id}`}
+                      className={clsx("tree-link", {
+                        selected: selectedChapter?.id === nodeData.chapter.id,
+                      })}
+                    >
+                      {nodeData.chapter.label}
+                    </Link>
+                  </div>
+                );
+              }}
+            </Tree>
+          )}
+          {!books.length && ready && (
+            <Flex>
+              Books not found. You can create one using the button above.
+            </Flex>
+          )}
         </AppShell.Navbar>
         <AppShell.Main w={"100dvw"} display={"flex"}>
           <Outlet />
@@ -421,8 +440,9 @@ export function App() {
                 await BooksCRUD.create({
                   title: newTitle,
                 });
-
-                setFetchTimestamp(Date.now());
+                startTransition(() => {
+                  setFetchTimestamp(Date.now());
+                });
                 closeCreateBookModal();
               } catch (e) {
                 console.log("oof", e);
@@ -447,7 +467,9 @@ export function App() {
                   title: newTitle,
                 });
 
-                setFetchTimestamp(Date.now());
+                startTransition(() => {
+                  setFetchTimestamp(Date.now());
+                });
                 closeEditBookModal();
               } catch (e) {
                 console.log("oof", e);
