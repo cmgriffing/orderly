@@ -7,6 +7,8 @@ import {
   ActionIcon,
   Button,
   Menu,
+  useMantineTheme,
+  getThemeColor,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useEffect, useState, startTransition } from "react";
@@ -48,6 +50,7 @@ import { SnippetsQueries } from "./data/repositories/snippets";
 
 export function App() {
   const navigate = useNavigate();
+  const theme = useMantineTheme();
   const [selectedChapter] = useAtom(currentChapter);
   const [opened, { toggle }] = useDisclosure();
   const [
@@ -116,9 +119,16 @@ export function App() {
               />
               <Flex align="center" gap={8}>
                 <img src="/orderly/orderly.svg" alt="Orderly" width={32} />
-                <Text ff="Courier New" fw={900} size="xl">
-                  Orderly
-                </Text>
+                <Link to="/" color="inherit">
+                  <Text
+                    ff="Courier New"
+                    fw={900}
+                    size="xl"
+                    c={getThemeColor("black", theme)}
+                  >
+                    Orderly
+                  </Text>
+                </Link>
                 <Text c="red" size="xs" fw={700} ml={-6} mt={-6}>
                   <sup>ALPHA</sup>
                 </Text>
