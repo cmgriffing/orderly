@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { startTransition, useEffect } from "react";
 import { Link, Outlet, useNavigate, useParams } from "react-router-dom";
 import { ActionIcon, Flex, Menu, Text, ScrollArea } from "@mantine/core";
 import { Tree } from "react-arborist";
@@ -14,6 +14,9 @@ import {
 } from "@tabler/icons-react";
 
 import {
+  appReady,
+  currentBook,
+  currentBookId,
   currentChapter,
   currentChapterId,
   currentSnippet,
@@ -26,22 +29,28 @@ import { ChaptersCRUD } from "../data/repositories/chapters";
 import { SnippetsCRUD } from "../data/repositories/snippets";
 import { CreateOrUpdateModal } from "../components/CreateOrUpdateModal";
 import { SnippetStatusIcon } from "../components/SnippetStatusIcon";
+import { NotFoundPageWrapper } from "../components/NotFoundPageWrapper";
 
 export function Chapter() {
   const navigate = useNavigate();
-  const { bookId, chapterId: rawChapterId, snippetId } = useParams();
+  const {
+    bookId: rawBookId,
+    chapterId: rawChapterId,
+    snippetId: rawSnippetId,
+  } = useParams();
+  const bookId = parseInt(rawBookId || "-1");
   const chapterId = parseInt(rawChapterId || "-1");
+  const snippetId = parseInt(rawSnippetId || "-1");
 
+  const [ready] = useAtom(appReady);
   const [, setFetchTimestamp] = useAtom(fetchTimestamp);
+  const [, setCurrentBookId] = useAtom(currentBookId);
   const [, setCurrentChapterId] = useAtom(currentChapterId);
   const [, setCurrentSnippetId] = useAtom(currentSnippetId);
+  const [book] = useAtom(currentBook);
   const [chapter] = useAtom(currentChapter);
   const [snippets] = useAtom(currentSnippets);
   const [selectedSnippet] = useAtom(currentSnippet);
-
-  useEffect(() => {
-    setCurrentSnippetId(snippetId ? parseInt(snippetId) : undefined);
-  }, [snippetId, setCurrentSnippetId]);
 
   const [
     editChapterModalOpened,
@@ -49,142 +58,186 @@ export function Chapter() {
   ] = useDisclosure(false);
 
   useEffect(() => {
+    setCurrentBookId(bookId);
+  }, [bookId, setCurrentBookId]);
+
+  useEffect(() => {
     setCurrentChapterId(chapterId);
   }, [chapterId, setCurrentChapterId]);
 
+  useEffect(() => {
+    setCurrentSnippetId(snippetId);
+  }, [snippetId, setCurrentSnippetId]);
+
   return (
-    <Flex h="100%" w="100%">
-      <Flex h="100%" w="14rem" direction={"column"}>
-        <Flex justify={"space-between"}>
-          <Text>{chapter?.label || "Chapter Not Found"}</Text>
+    <NotFoundPageWrapper
+      hasEntity={!!book}
+      entityName="Book"
+      notFoundContent={
+        <>
+          <Text w="300px">
+            The book could not be found. You can create a new one using the
+            button in the sidebar.
+          </Text>
+        </>
+      }
+    >
+      <NotFoundPageWrapper
+        hasEntity={!!chapter}
+        entityName="Chapter"
+        notFoundContent={
+          <>
+            <Text w="300px">
+              The chapter could not be found. You can create a new one using the
+              book's menu in the sidebar.
+            </Text>
+          </>
+        }
+      >
+        <Flex h="100%" w="100%">
+          <Flex h="100%" w="20rem" direction={"column"}>
+            <Flex justify={"space-between"}>
+              <Text>{chapter?.label}</Text>
 
-          <Menu shadow="md">
-            <Menu.Target>
-              <ActionIcon
-                variant="transparent"
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-              >
-                <IconDots />
-              </ActionIcon>
-            </Menu.Target>
-            <Menu.Dropdown>
-              <Menu.Item
-                leftSection={<IconTextSize />}
-                onClick={() => {
-                  openEditChapterModal();
-                }}
-              >
-                Rename
-              </Menu.Item>
-              <Menu.Item
-                leftSection={<IconPlus />}
-                onClick={async (e) => {
-                  e.stopPropagation();
-                  // create new snippet with default name
+              <Menu shadow="md">
+                <Menu.Target>
+                  <ActionIcon
+                    variant="transparent"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                    }}
+                  >
+                    <IconDots />
+                  </ActionIcon>
+                </Menu.Target>
+                <Menu.Dropdown>
+                  <Menu.Item
+                    leftSection={<IconTextSize />}
+                    onClick={() => {
+                      openEditChapterModal();
+                    }}
+                  >
+                    Rename
+                  </Menu.Item>
+                  <Menu.Item
+                    leftSection={<IconPlus />}
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      // create new snippet with default name
 
-                  const newSnippet = await SnippetsCRUD.create({
-                    label: "New Snippet",
-                    sortOrder: snippets?.length || 0,
-                    chapterId,
+                      const newSnippet = await SnippetsCRUD.create({
+                        label: "New Snippet",
+                        sortOrder: snippets?.length || 0,
+                        chapterId,
+                      });
+
+                      if (newSnippet) {
+                        startTransition(() => {
+                          setFetchTimestamp(Date.now());
+                        });
+                        navigate(
+                          `/books/${bookId}/chapters/${chapterId}/snippets/${newSnippet?.id}`
+                        );
+                      }
+                    }}
+                  >
+                    Add Snippet
+                  </Menu.Item>
+                  <Menu.Item
+                    leftSection={<IconTrash />}
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      await ChaptersCRUD.delete(chapterId);
+                      startTransition(() => {
+                        setFetchTimestamp(Date.now());
+                      });
+                      navigate("/");
+                    }}
+                  >
+                    Delete
+                  </Menu.Item>
+                </Menu.Dropdown>
+              </Menu>
+            </Flex>
+
+            {!!snippets?.length && snippets?.length > 0 && (
+              <Tree
+                rowHeight={36}
+                onMove={async (e) => {
+                  let newSortOrder = 0;
+                  if (e.index === 0) {
+                    newSortOrder = (snippets[e.index].sortOrder || 0) - 1;
+                  } else if (e.index >= snippets.length) {
+                    newSortOrder = snippets[e.index - 1].sortOrder + 1;
+                  } else {
+                    newSortOrder =
+                      ((snippets[e.index - 1].sortOrder ||
+                        snippets.length - 1) +
+                        (snippets[e.index].sortOrder || snippets.length)) /
+                      2;
+                  }
+                  await SnippetsCRUD.update(e.dragNodes[0].data.id, {
+                    sortOrder: newSortOrder,
                   });
 
-                  if (newSnippet) {
-                    setFetchTimestamp(Date.now());
-                    navigate(
-                      `/books/${bookId}/chapters/${chapterId}/snippets/${newSnippet?.id}`
-                    );
-                  }
-                }}
-              >
-                Add Snippet
-              </Menu.Item>
-              <Menu.Item
-                leftSection={<IconTrash />}
-                onClick={async (e) => {
-                  e.stopPropagation();
-                  await ChaptersCRUD.delete(chapterId);
                   setFetchTimestamp(Date.now());
-                  navigate("/");
                 }}
+                data={snippets}
               >
-                Delete
-              </Menu.Item>
-            </Menu.Dropdown>
-          </Menu>
-        </Flex>
-
-        {snippets?.length && snippets?.length > 0 && (
-          <Tree
-            rowHeight={36}
-            onMove={async (e) => {
-              let newSortOrder = 0;
-              if (e.index === 0) {
-                newSortOrder = (snippets[e.index].sortOrder || 0) - 1;
-              } else if (e.index >= snippets.length) {
-                newSortOrder = snippets[e.index - 1].sortOrder + 1;
-              } else {
-                newSortOrder =
-                  ((snippets[e.index - 1].sortOrder || snippets.length - 1) +
-                    (snippets[e.index].sortOrder || snippets.length)) /
-                  2;
-              }
-              await SnippetsCRUD.update(e.dragNodes[0].data.id, {
-                sortOrder: newSortOrder,
-              });
-
-              setFetchTimestamp(Date.now());
-            }}
-            data={snippets}
-          >
-            {({ node, dragHandle, style }) => (
-              <div ref={dragHandle} style={{ ...style, padding: "4px" }}>
-                <Link
-                  to={`/books/${bookId}/chapters/${node.data.chapterId}/snippets/${node.data?.id}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                  }}
-                  className={clsx("tree-link", {
-                    selected: selectedSnippet?.id === node?.data.id,
-                  })}
-                >
-                  <Flex align="center">
-                    <SnippetStatusIcon snippet={node.data} height={24} />
-                    <Text>{node.data.label}</Text>
-                  </Flex>
-                </Link>
-              </div>
+                {({ node, dragHandle, style }) => (
+                  <div ref={dragHandle} style={{ ...style, padding: "4px" }}>
+                    <Link
+                      to={`/books/${bookId}/chapters/${node.data.chapterId}/snippets/${node.data?.id}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
+                      className={clsx("tree-link", {
+                        selected: selectedSnippet?.id === node?.data.id,
+                      })}
+                    >
+                      <Flex align="center">
+                        <SnippetStatusIcon snippet={node.data} height={24} />
+                        <Text>{node.data.label}</Text>
+                      </Flex>
+                    </Link>
+                  </div>
+                )}
+              </Tree>
             )}
-          </Tree>
-        )}
-        {(!snippets || snippets?.length === 0) && <div>No Snippets found</div>}
-      </Flex>
 
-      <ScrollArea.Autosize mah={"90vh"} w={"100%"} mx="auto">
-        <Outlet />
-      </ScrollArea.Autosize>
+            {!snippets?.length && ready && (
+              <Flex px="1rem" justify="center" align="center">
+                Chapters not found. You can create one using the menu above.
+              </Flex>
+            )}
+          </Flex>
 
-      <CreateOrUpdateModal
-        opened={editChapterModalOpened}
-        inputLabel="Chapter Title"
-        modalTitle="Edit Chapter"
-        buttonLabel="Update"
-        title={chapter?.label}
-        onClose={() => closeEditChapterModal()}
-        onSubmit={async (newTitle) => {
-          try {
-            await ChaptersCRUD.update(chapterId, {
-              label: newTitle,
-            });
+          <ScrollArea.Autosize mah={"90vh"} w={"100%"} mx="auto">
+            <Outlet />
+          </ScrollArea.Autosize>
 
-            setFetchTimestamp(Date.now());
-            closeEditChapterModal();
-          } catch (e) {
-            console.log("oof", e);
-          }
-        }}
-      />
-    </Flex>
+          <CreateOrUpdateModal
+            opened={editChapterModalOpened}
+            inputLabel="Chapter Title"
+            modalTitle="Edit Chapter"
+            buttonLabel="Update"
+            title={chapter?.label}
+            onClose={() => closeEditChapterModal()}
+            onSubmit={async (newTitle) => {
+              try {
+                await ChaptersCRUD.update(chapterId, {
+                  label: newTitle,
+                });
+
+                setFetchTimestamp(Date.now());
+                closeEditChapterModal();
+              } catch (e) {
+                console.log("oof", e);
+              }
+            }}
+          />
+        </Flex>
+      </NotFoundPageWrapper>
+    </NotFoundPageWrapper>
   );
 }
