@@ -314,24 +314,26 @@ export function App() {
 
                                 // fetch chapters for book
                                 const bookContent = await Promise.all(
-                                  book.chapters.map(async (chapter) => {
-                                    // fetch snippets for chapter
-                                    const snippets =
-                                      await SnippetsQueries.getSnippetsForChapter(
-                                        chapter.id
-                                      );
-                                    const content = snippets
-                                      .filter((snippet) => !!snippet.content)
-                                      .map((snippet) => {
-                                        return `          ${snippet.content}`;
-                                      })
-                                      .join("\n");
+                                  book.chapters.map(
+                                    async (chapter: ChapterModel) => {
+                                      // fetch snippets for chapter
+                                      const snippets =
+                                        await SnippetsQueries.getSnippetsForChapter(
+                                          chapter.id
+                                        );
+                                      const content = snippets
+                                        .filter((snippet) => !!snippet.content)
+                                        .map((snippet) => {
+                                          return `          ${snippet.content}`;
+                                        })
+                                        .join("\n");
 
-                                    return {
-                                      title: chapter.label,
-                                      content,
-                                    };
-                                  })
+                                      return {
+                                        title: chapter.label,
+                                        content,
+                                      };
+                                    }
+                                  )
                                 );
 
                                 // Compose Title page and Chapters
