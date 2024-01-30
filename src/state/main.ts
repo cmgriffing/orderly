@@ -2,12 +2,17 @@ import { atom } from "jotai";
 import { BooksCRUD, BooksQueries } from "../data/repositories/books";
 import { ChaptersCRUD } from "../data/repositories/chapters";
 import { SnippetsCRUD, SnippetsQueries } from "../data/repositories/snippets";
-import { SettingsQueries } from "../data/repositories/settings";
+import {
+  SettingsCRUD,
+  SettingsModel,
+  SettingsQueries,
+} from "../data/repositories/settings";
 import { loadOrGetModel } from "../utils/model-data";
 import { WhisperModelName } from "../types";
 
 export const appReady = atom(false);
 export const fetchTimestamp = atom(0);
+export const settingsFetchTimestamp = atom(0);
 
 // Books
 
@@ -81,15 +86,28 @@ export const currentSnippet = atom(async (get) => {
 
 // Settings
 
-export const currentSettings = atom(async (get) => {
-  get(fetchTimestamp);
-  const ready = get(appReady);
-  if (!ready) {
-    return;
-  }
+export const currentSettings = atom(
+  async (get) => {
+    get(settingsFetchTimestamp);
+    const ready = get(appReady);
+    if (!ready) {
+      return;
+    }
 
-  return SettingsQueries.getSettingsForUser();
-});
+    return SettingsQueries.getSettingsForUser();
+  },
+  async (_get, _set, update: Partial<SettingsModel>) => {
+    const settings: SettingsModel = await _get(currentSettings);
+
+    if (!settings) {
+      return update;
+    }
+
+    await SettingsCRUD.update(settings.id, update);
+    _set(settingsFetchTimestamp, Date.now());
+    return { ...settings, ...update };
+  }
+);
 
 // Whisper
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -97,39 +115,43 @@ declare const Module: any;
 export const currentModel = atom(
   async (get) => {
     const settings = await get(currentSettings);
+    const ready = get(appReady);
+    if (!ready) {
+      return;
+    }
+
     if (!settings) {
       return;
     }
 
+    // TODO: this method seems to leak memory when changing models
     return loadOrGetModel(settings.selectedModel as WhisperModelName, () => {});
   },
-  (_get, _set, update) => {
+  async (_get, _set, update) => {
     return update;
   }
 );
 export const whisperInstance = atom(async (get) => {
+  get(settingsFetchTimestamp);
   const model = await get(currentModel);
   const settings = await get(currentSettings);
-  if (!settings) {
+  if (!settings || !model) {
     return;
   }
 
   if (model) {
     try {
       Module.FS_unlink("whisper.bin");
+      // Module.free();
     } catch (e) {
       // ignore
     }
 
     Module.FS_createDataFile("/", "whisper.bin", model, true, true);
+    const instance = Module.init("whisper.bin");
 
     return {
       processAudio: (audio: Float32Array | ArrayBuffer) => {
-        const instance = Module.init("whisper.bin");
-        Module.print = (msg: string) => {
-          console.log("overridden", msg);
-        };
-
         return Module.full_default(
           instance,
           audio,

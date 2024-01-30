@@ -9,6 +9,7 @@ import {
   currentSnippetId,
   fetchTimestamp,
   whisperInstance,
+  currentSettings,
 } from "../state/main";
 import { IconCirclePlus } from "@tabler/icons-react";
 import { SnippetModel, SnippetsCRUD } from "../data/repositories/snippets";
@@ -45,6 +46,7 @@ export function Snippet() {
   const [, setCurrentSnippetId] = useAtom(currentSnippetId);
   const [snippet] = useAtom(currentSnippet);
   const [snippets] = useAtom(currentSnippets);
+  const [settings] = useAtom(currentSettings);
   const contentRef = useRef<HTMLTextAreaElement>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);
@@ -84,7 +86,6 @@ export function Snippet() {
         },
         finishedCallback: async (newAudio, newAudioBlob) => {
           setIsRecording(false);
-          console.log({ newAudio });
           setAudio(newAudio);
           setAudioBlob(newAudioBlob);
           const result = await whisper?.processAudio(newAudio);
@@ -101,7 +102,7 @@ export function Snippet() {
         },
       })
     );
-  }, [whisper]);
+  }, [whisper, settings, openProcessingModal]);
 
   useEffect(() => {
     async function inner() {
@@ -146,7 +147,7 @@ export function Snippet() {
     return () => {
       window.removeEventListener("whisperResult", listener);
     };
-  }, [snippetId, setFetchTimestamp]);
+  }, [snippetId, setFetchTimestamp, closeProcessingModal]);
 
   useEffect(() => {
     if (isRecording) {
