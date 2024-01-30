@@ -96,16 +96,16 @@ export const currentSettings = atom(
 
     return SettingsQueries.getSettingsForUser();
   },
-  async (_get, _set, update: Partial<SettingsModel>) => {
-    const settings: SettingsModel = await _get(currentSettings);
+  async (_get, _set, update) => {
+    const settings: SettingsModel | undefined = await _get(currentSettings);
 
     if (!settings) {
-      return update;
+      return;
     }
 
-    await SettingsCRUD.update(settings.id, update);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await SettingsCRUD.update(settings.id, update as any);
     _set(settingsFetchTimestamp, Date.now());
-    return { ...settings, ...update };
   }
 );
 
