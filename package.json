@@ -39,7 +39,8 @@
     "react-arborist": "^3.4.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.21.1",
-    "sqlocal": "^0.6.4"
+    "sqlocal": "^0.6.4",
+    "use-debounce": "^10.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.10.5",

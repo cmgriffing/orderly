@@ -8,6 +8,7 @@ import {
   Popover,
   Text,
 } from "@mantine/core";
+import { useDebouncedCallback } from "use-debounce";
 import {
   IconMicrophone,
   IconTrash,
@@ -67,6 +68,9 @@ export function SnippetForm({
 }: SnippetFormProps | DisabledSnippetProps) {
   const [labelValue, setLabelValue] = useState(snippet?.label || "");
   const [contentValue, setContentValue] = useState(snippet?.content || "");
+  const debouncedEditLabel = useDebouncedCallback(onEditLabel, 500);
+  const debouncedEditContent = useDebouncedCallback(onEditContent, 500);
+
   const status = getSnippetStatus(snippet);
 
   useEffect(() => {
@@ -130,7 +134,7 @@ export function SnippetForm({
         value={labelValue}
         onChange={async (e) => {
           setLabelValue(e.currentTarget.value);
-          onEditLabel(e.currentTarget.value);
+          debouncedEditLabel(e.currentTarget.value);
         }}
         disabled={disabled}
       />
@@ -140,7 +144,7 @@ export function SnippetForm({
         label="Content"
         onInput={async (e) => {
           setContentValue(e.currentTarget.value);
-          onEditContent(e.currentTarget.value);
+          debouncedEditContent(e.currentTarget.value);
         }}
         disabled={disabled}
       />
