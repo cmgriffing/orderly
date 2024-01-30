@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAtom } from "jotai";
 import {
   Modal,
@@ -19,7 +19,6 @@ import {
   whisperModelsQuantized,
 } from "../whisper-utils";
 import { currentModel, currentSettings, fetchTimestamp } from "../state/main";
-import { SettingsCRUD } from "../data/repositories/settings";
 import { loadOrGetModel } from "../utils/model-data";
 import { WhisperModelName } from "../types";
 import { IconQuestionMark } from "@tabler/icons-react";
@@ -38,9 +37,18 @@ export function SettingsModal({
   onClose = () => {},
 }: SettingsModalProps) {
   const [, setFetchTimestamp] = useAtom(fetchTimestamp);
-  const [settings] = useAtom(currentSettings);
+  const [settings, setSettings] = useAtom(currentSettings);
   const [selectedModel, setSelectedModel] = useState<WhisperModelName>();
   const [threads, setThreads] = useState(2);
+  const [model, setCurrentModel] = useAtom(currentModel);
+  const [newModel, setNewModel] = useState<Uint8Array>();
+  const whisperModelUpdated = useCallback((_newModel: Uint8Array) => {
+    setNewModel(_newModel);
+  }, []);
+
+  useEffect(() => {
+    setNewModel(model);
+  }, [model]);
 
   useEffect(() => {
     if (settings?.selectedModel) {
@@ -56,7 +64,7 @@ export function SettingsModal({
     loaded: whisperModelLoaded,
     loading: whisperModelLoading,
     loadingProgress,
-  } = useModelData(selectedModel);
+  } = useModelData(selectedModel, whisperModelUpdated);
 
   return (
     <Modal
@@ -90,11 +98,12 @@ export function SettingsModal({
           // TODO: pass values to be saved at App level
 
           // FOR NOW: save directly from here
-
-          await SettingsCRUD.update(settings.id, {
+          setSettings({
             threads,
             selectedModel,
           });
+
+          setCurrentModel(newModel);
 
           setFetchTimestamp(Date.now());
 
@@ -209,7 +218,10 @@ export function SettingsModal({
   );
 }
 
-function useModelData(selectedModel: WhisperModelName) {
+function useModelData(
+  selectedModel: WhisperModelName,
+  whisperModelLoaded: (newModel: Uint8Array) => void
+) {
   const [loading, setLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [, setCurrentModel] = useAtom(currentModel);
@@ -226,8 +238,10 @@ function useModelData(selectedModel: WhisperModelName) {
         setLoadingProgress(Math.floor(progress * 100));
       })
         .then((result) => {
-          setLoadingProgress(100);
-          setCurrentModel(result);
+          if (result) {
+            setLoadingProgress(100);
+            whisperModelLoaded(result);
+          }
         })
         .catch(() => {
           setLoadingProgress(0);
@@ -236,7 +250,7 @@ function useModelData(selectedModel: WhisperModelName) {
     }
 
     loadModel();
-  }, [selectedModel, setCurrentModel]);
+  }, [selectedModel, setCurrentModel, whisperModelLoaded]);
 
   return {
     loading,

@@ -10,6 +10,7 @@ const dbName = "whisperModels";
 const modelBaseUrl =
   "https://link.storjshare.io/s/jueavj4qtolpgszkbp5awref22da/models";
 
+// TODO: this method seems to leak memory when changing models
 export function loadOrGetModel(
   selectedModel: keyof typeof whisperModelSizes | "" | undefined,
   progressCallback: (progress: number) => void
