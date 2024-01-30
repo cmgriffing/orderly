@@ -10,3 +10,63 @@
     background: #eeeeee;
   }
 }
+
+@mixin sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.sr-only {
+  @include sr-only();
+}
+
+@media screen and (max-width: 320px) {
+  .sr-only-xs {
+    @include sr-only();
+  }
+
+  button.mobile-friendly-button-xs {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .sr-only-sm {
+    @include sr-only();
+  }
+
+  button.mobile-friendly-button-sm {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .sr-only-md {
+    @include sr-only();
+  }
+
+  button.mobile-friendly-button-md {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}
+
+@media screen and (max-width: 992px) {
+  .sr-only-lg {
+    @include sr-only();
+  }
+
+  button.mobile-friendly-button-lg {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}

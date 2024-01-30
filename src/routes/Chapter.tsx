@@ -97,7 +97,9 @@ export function Chapter() {
         <Flex h="100%" w="100%">
           <Flex h="100%" w="20rem" direction={"column"}>
             <Flex justify={"space-between"}>
-              <Text>{chapter?.label}</Text>
+              <Text className="single-line-ellipsis" maw="260px">
+                {chapter?.label}
+              </Text>
 
               <Menu shadow="md">
                 <Menu.Target>
@@ -197,7 +199,13 @@ export function Chapter() {
                     >
                       <Flex align="center">
                         <SnippetStatusIcon snippet={node.data} height={24} />
-                        <Text>{node.data.label}</Text>
+                        <Text
+                          className="single-line-ellipsis"
+                          maw="210px"
+                          ml="0.5rem"
+                        >
+                          {node.data.label}
+                        </Text>
                       </Flex>
                     </Link>
                   </div>
@@ -207,7 +215,7 @@ export function Chapter() {
 
             {!snippets?.length && ready && (
               <Flex px="1rem" justify="center" align="center">
-                Chapters not found. You can create one using the menu above.
+                Snippets not found. You can create one using the menu above.
               </Flex>
             )}
           </Flex>
