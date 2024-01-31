@@ -7,7 +7,7 @@
 
   &.disabled {
     padding: 1rem;
-    margin-top: -20%;
+    margin-top: -30%;
 
     .contents {
       opacity: 0.84;
@@ -36,7 +36,7 @@
 
     &.below {
       margin-top: 0;
-      margin-bottom: -20%;
+      margin-bottom: -30%;
 
       .other-snippet-label-wrapper {
         bottom: auto;

@@ -142,6 +142,7 @@ export function SnippetForm({
         ref={contentRef}
         value={contentValue}
         label="Content"
+        rows={!disabled ? 7 : 2}
         onInput={async (e) => {
           setContentValue(e.currentTarget.value);
           debouncedEditContent(e.currentTarget.value);

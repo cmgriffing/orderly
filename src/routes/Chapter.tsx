@@ -1,6 +1,18 @@
 import { startTransition, useEffect } from "react";
 import { Link, Outlet, useNavigate, useParams } from "react-router-dom";
-import { ActionIcon, Flex, Menu, Text, ScrollArea } from "@mantine/core";
+import {
+  ActionIcon,
+  Flex,
+  Menu,
+  Text,
+  ScrollArea,
+  Button,
+  Drawer,
+  Box,
+  Title,
+  CloseButton,
+} from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 import { Tree } from "react-arborist";
 import { useAtom } from "jotai";
 import { useDisclosure } from "@mantine/hooks";
@@ -11,6 +23,8 @@ import {
   IconTextSize,
   IconPlus,
   IconTrash,
+  IconCaretDownFilled,
+  IconEdit,
 } from "@tabler/icons-react";
 
 import {
@@ -31,6 +45,8 @@ import { CreateOrUpdateModal } from "../components/CreateOrUpdateModal";
 import { SnippetStatusIcon } from "../components/SnippetStatusIcon";
 import { NotFoundPageWrapper } from "../components/NotFoundPageWrapper";
 
+import "./Chapter.scss";
+
 export function Chapter() {
   const navigate = useNavigate();
   const {
@@ -41,6 +57,8 @@ export function Chapter() {
   const bookId = parseInt(rawBookId || "-1");
   const chapterId = parseInt(rawChapterId || "-1");
   const snippetId = parseInt(rawSnippetId || "-1");
+
+  const shouldHideTreeColumn = useMediaQuery(`(max-width: 1024px)`);
 
   const [ready] = useAtom(appReady);
   const [, setFetchTimestamp] = useAtom(fetchTimestamp);
@@ -57,6 +75,11 @@ export function Chapter() {
     { open: openEditChapterModal, close: closeEditChapterModal },
   ] = useDisclosure(false);
 
+  const [
+    snippetsMenuOpened,
+    { open: openSnippetsMenu, close: closeSnippetsMenu },
+  ] = useDisclosure(false);
+
   useEffect(() => {
     setCurrentBookId(bookId);
   }, [bookId, setCurrentBookId]);
@@ -68,184 +91,259 @@ export function Chapter() {
   useEffect(() => {
     setCurrentSnippetId(snippetId);
   }, [snippetId, setCurrentSnippetId]);
+  async function createNewSnippet(e: any) {
+    e.stopPropagation();
+    // create new snippet with default name
+
+    const newSnippet = await SnippetsCRUD.create({
+      label: "New Snippet",
+      sortOrder: snippets?.length || 0,
+      chapterId,
+    });
+
+    if (newSnippet) {
+      startTransition(() => {
+        setFetchTimestamp(Date.now());
+      });
+      navigate(
+        `/books/${bookId}/chapters/${chapterId}/snippets/${newSnippet?.id}`
+      );
+    }
+  }
+
+  const chapterMenu = (
+    <Menu shadow="md">
+      <Menu.Target>
+        <ActionIcon
+          variant="transparent"
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+        >
+          <IconDots />
+        </ActionIcon>
+      </Menu.Target>
+      <Menu.Dropdown>
+        <Menu.Item
+          leftSection={<IconTextSize />}
+          onClick={() => {
+            openEditChapterModal();
+          }}
+        >
+          Rename
+        </Menu.Item>
+        <Menu.Item leftSection={<IconPlus />} onClick={async (e) => {}}>
+          Add Snippet
+        </Menu.Item>
+        <Menu.Item
+          leftSection={<IconTrash />}
+          onClick={async (e) => {
+            e.stopPropagation();
+            await ChaptersCRUD.delete(chapterId);
+            startTransition(() => {
+              setFetchTimestamp(Date.now());
+            });
+            navigate("/");
+          }}
+        >
+          Delete
+        </Menu.Item>
+      </Menu.Dropdown>
+    </Menu>
+  );
 
   return (
-    <NotFoundPageWrapper
-      hasEntity={!!book}
-      entityName="Book"
-      notFoundContent={
-        <>
-          <Text w="300px">
-            The book could not be found. You can create a new one using the
-            button in the sidebar.
-          </Text>
-        </>
-      }
-    >
+    <>
       <NotFoundPageWrapper
-        hasEntity={!!chapter}
-        entityName="Chapter"
+        hasEntity={!!book}
+        entityName="Book"
         notFoundContent={
           <>
             <Text w="300px">
-              The chapter could not be found. You can create a new one using the
-              book's menu in the sidebar.
+              The book could not be found. You can create a new one using the
+              button in the sidebar.
             </Text>
           </>
         }
       >
-        <Flex h="100%" w="100%">
-          <Flex h="100%" w="20rem" direction={"column"}>
-            <Flex justify={"space-between"}>
-              <Text className="single-line-ellipsis" maw="260px">
-                {chapter?.label}
+        <NotFoundPageWrapper
+          hasEntity={!!chapter}
+          entityName="Chapter"
+          notFoundContent={
+            <>
+              <Text w="300px">
+                The chapter could not be found. You can create a new one using
+                the book's menu in the sidebar.
               </Text>
-
-              <Menu shadow="md">
-                <Menu.Target>
-                  <ActionIcon
-                    variant="transparent"
+            </>
+          }
+        >
+          <Flex
+            h="100%"
+            w="100%"
+            direction={shouldHideTreeColumn ? "column" : "row"}
+            pos={"relative"}
+          >
+            <div
+              className={clsx("chapter-snippets-menu-content", {
+                open: snippetsMenuOpened,
+              })}
+            >
+              <Flex justify={"space-between"} align={"center"}>
+                <Flex align="center" gap="1rem" maw={"80dvw"}>
+                  {/* <ActionIcon variant="subtle" onClick={openEditChapterModal}>
+                    <IconEdit />
+                  </ActionIcon> */}
+                  {chapterMenu}
+                  <Title className="single-line-ellipsis" size={"1.5rem"}>
+                    {chapter?.label}
+                  </Title>
+                </Flex>
+                <CloseButton
+                  size={"xl"}
+                  onClick={() => {
+                    closeSnippetsMenu();
+                  }}
+                />
+              </Flex>
+              <ScrollArea mah={"100%"} w="100%">
+                {snippets?.map((snippet) => (
+                  <Link
+                    to={`/books/${bookId}/chapters/${snippet.chapterId}/snippets/${snippet?.id}`}
                     onClick={(e) => {
                       e.stopPropagation();
+                      closeSnippetsMenu();
                     }}
+                    className={clsx("menu-link", {
+                      selected: selectedSnippet?.id === snippet.id,
+                    })}
                   >
-                    <IconDots />
-                  </ActionIcon>
-                </Menu.Target>
-                <Menu.Dropdown>
-                  <Menu.Item
-                    leftSection={<IconTextSize />}
-                    onClick={() => {
-                      openEditChapterModal();
-                    }}
-                  >
-                    Rename
-                  </Menu.Item>
-                  <Menu.Item
-                    leftSection={<IconPlus />}
-                    onClick={async (e) => {
-                      e.stopPropagation();
-                      // create new snippet with default name
+                    <Flex align="center">
+                      <SnippetStatusIcon snippet={snippet} height={24} />
+                      <Text
+                        className="single-line-ellipsis"
+                        maw="72dvw"
+                        ml="0.5rem"
+                      >
+                        {snippet.label}
+                      </Text>
+                    </Flex>
+                  </Link>
+                ))}
+              </ScrollArea>
+              <Button onClick={() => {}}>Create New Snippet</Button>
+            </div>
+            <Flex
+              className="snippets-tree"
+              h="100%"
+              w="20rem"
+              direction={"column"}
+            >
+              <Flex justify={"space-between"}>
+                <Text className="single-line-ellipsis" maw="260px">
+                  {chapter?.label}
+                </Text>
+                {chapterMenu}
+              </Flex>
 
-                      const newSnippet = await SnippetsCRUD.create({
-                        label: "New Snippet",
-                        sortOrder: snippets?.length || 0,
-                        chapterId,
-                      });
+              {!!snippets?.length && snippets?.length > 0 && (
+                <Tree
+                  rowHeight={36}
+                  onMove={async (e) => {
+                    let newSortOrder = 0;
+                    if (e.index === 0) {
+                      newSortOrder = (snippets[e.index].sortOrder || 0) - 1;
+                    } else if (e.index >= snippets.length) {
+                      newSortOrder = snippets[e.index - 1].sortOrder + 1;
+                    } else {
+                      newSortOrder =
+                        ((snippets[e.index - 1].sortOrder ||
+                          snippets.length - 1) +
+                          (snippets[e.index].sortOrder || snippets.length)) /
+                        2;
+                    }
+                    await SnippetsCRUD.update(e.dragNodes[0].data.id, {
+                      sortOrder: newSortOrder,
+                    });
 
-                      if (newSnippet) {
-                        startTransition(() => {
-                          setFetchTimestamp(Date.now());
-                        });
-                        navigate(
-                          `/books/${bookId}/chapters/${chapterId}/snippets/${newSnippet?.id}`
-                        );
-                      }
-                    }}
-                  >
-                    Add Snippet
-                  </Menu.Item>
-                  <Menu.Item
-                    leftSection={<IconTrash />}
-                    onClick={async (e) => {
-                      e.stopPropagation();
-                      await ChaptersCRUD.delete(chapterId);
-                      startTransition(() => {
-                        setFetchTimestamp(Date.now());
-                      });
-                      navigate("/");
-                    }}
-                  >
-                    Delete
-                  </Menu.Item>
-                </Menu.Dropdown>
-              </Menu>
+                    setFetchTimestamp(Date.now());
+                  }}
+                  data={snippets}
+                >
+                  {({ node, dragHandle, style }) => (
+                    <div ref={dragHandle} style={{ ...style, padding: "4px" }}>
+                      <Link
+                        to={`/books/${bookId}/chapters/${node.data.chapterId}/snippets/${node.data?.id}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                        }}
+                        className={clsx("tree-link", {
+                          selected: selectedSnippet?.id === node?.data.id,
+                        })}
+                      >
+                        <Flex align="center">
+                          <SnippetStatusIcon snippet={node.data} height={24} />
+                          <Text
+                            className="single-line-ellipsis"
+                            maw="210px"
+                            ml="0.5rem"
+                          >
+                            {node.data.label}
+                          </Text>
+                        </Flex>
+                      </Link>
+                    </div>
+                  )}
+                </Tree>
+              )}
+
+              {!snippets?.length && ready && (
+                <Flex px="1rem" justify="center" align="center">
+                  Snippets not found. You can create one using the menu above.
+                </Flex>
+              )}
             </Flex>
 
-            {!!snippets?.length && snippets?.length > 0 && (
-              <Tree
-                rowHeight={36}
-                onMove={async (e) => {
-                  let newSortOrder = 0;
-                  if (e.index === 0) {
-                    newSortOrder = (snippets[e.index].sortOrder || 0) - 1;
-                  } else if (e.index >= snippets.length) {
-                    newSortOrder = snippets[e.index - 1].sortOrder + 1;
-                  } else {
-                    newSortOrder =
-                      ((snippets[e.index - 1].sortOrder ||
-                        snippets.length - 1) +
-                        (snippets[e.index].sortOrder || snippets.length)) /
-                      2;
-                  }
-                  await SnippetsCRUD.update(e.dragNodes[0].data.id, {
-                    sortOrder: newSortOrder,
+            <Button
+              variant="outline"
+              className="snippets-menu-button"
+              mb="1rem"
+              onClick={() => {
+                openSnippetsMenu();
+              }}
+            >
+              <Flex align="center">
+                Snippets Menu <IconCaretDownFilled size={"1rem"} />
+              </Flex>
+            </Button>
+
+            <ScrollArea.Autosize mah={"90vh"} w={"100%"} mx="auto">
+              <Outlet />
+            </ScrollArea.Autosize>
+
+            <CreateOrUpdateModal
+              opened={editChapterModalOpened}
+              inputLabel="Chapter Title"
+              modalTitle="Edit Chapter"
+              buttonLabel="Update"
+              title={chapter?.label}
+              onClose={() => closeEditChapterModal()}
+              onSubmit={async (newTitle) => {
+                try {
+                  await ChaptersCRUD.update(chapterId, {
+                    label: newTitle,
                   });
 
                   setFetchTimestamp(Date.now());
-                }}
-                data={snippets}
-              >
-                {({ node, dragHandle, style }) => (
-                  <div ref={dragHandle} style={{ ...style, padding: "4px" }}>
-                    <Link
-                      to={`/books/${bookId}/chapters/${node.data.chapterId}/snippets/${node.data?.id}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                      }}
-                      className={clsx("tree-link", {
-                        selected: selectedSnippet?.id === node?.data.id,
-                      })}
-                    >
-                      <Flex align="center">
-                        <SnippetStatusIcon snippet={node.data} height={24} />
-                        <Text
-                          className="single-line-ellipsis"
-                          maw="210px"
-                          ml="0.5rem"
-                        >
-                          {node.data.label}
-                        </Text>
-                      </Flex>
-                    </Link>
-                  </div>
-                )}
-              </Tree>
-            )}
-
-            {!snippets?.length && ready && (
-              <Flex px="1rem" justify="center" align="center">
-                Snippets not found. You can create one using the menu above.
-              </Flex>
-            )}
+                  closeEditChapterModal();
+                } catch (e) {
+                  console.log("oof", e);
+                }
+              }}
+            />
           </Flex>
-
-          <ScrollArea.Autosize mah={"90vh"} w={"100%"} mx="auto">
-            <Outlet />
-          </ScrollArea.Autosize>
-
-          <CreateOrUpdateModal
-            opened={editChapterModalOpened}
-            inputLabel="Chapter Title"
-            modalTitle="Edit Chapter"
-            buttonLabel="Update"
-            title={chapter?.label}
-            onClose={() => closeEditChapterModal()}
-            onSubmit={async (newTitle) => {
-              try {
-                await ChaptersCRUD.update(chapterId, {
-                  label: newTitle,
-                });
-
-                setFetchTimestamp(Date.now());
-                closeEditChapterModal();
-              } catch (e) {
-                console.log("oof", e);
-              }
-            }}
-          />
-        </Flex>
+        </NotFoundPageWrapper>
       </NotFoundPageWrapper>
-    </NotFoundPageWrapper>
+    </>
   );
 }

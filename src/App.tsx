@@ -452,7 +452,12 @@ export function App() {
             </Flex>
           )}
         </AppShell.Navbar>
-        <AppShell.Main w={"100dvw"} display={"flex"}>
+        <AppShell.Main
+          w={"100dvw"}
+          h="100dvh"
+          display={"flex"}
+          pos={"relative"}
+        >
           <Outlet />
 
           <CreateOrUpdateModal
