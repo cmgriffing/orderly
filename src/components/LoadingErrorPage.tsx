@@ -1,4 +1,3 @@
-import React from "react";
 import { Flex, Title, Text } from "@mantine/core";
 import { IconMoodPuzzled } from "@tabler/icons-react";
 
