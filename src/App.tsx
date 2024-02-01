@@ -83,14 +83,14 @@ export function App() {
     async function initialize() {
       await DBUtils.seed();
       startTransition(() => {
-        setTimeout(() => {
-          setAppReady(true);
-          setFetchTimestamp(Date.now());
-        }, 10000);
+        setAppReady(true);
+        setFetchTimestamp(Date.now());
       });
     }
 
-    initialize();
+    if (!!setAppReady && !!setFetchTimestamp) {
+      initialize();
+    }
   }, [setAppReady, setFetchTimestamp]);
 
   useEffect(() => {
