@@ -83,8 +83,10 @@ export function App() {
     async function initialize() {
       await DBUtils.seed();
       startTransition(() => {
-        setAppReady(true);
-        setFetchTimestamp(Date.now());
+        setTimeout(() => {
+          setAppReady(true);
+          setFetchTimestamp(Date.now());
+        }, 3000);
       });
     }
 
