@@ -6,17 +6,12 @@ import { MantineProvider, Loader, Flex } from "@mantine/core";
 
 import "@mantine/core/styles.css";
 import "./index.css";
+import { AppLoader } from "./components/AppLoader";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <MantineProvider>
-      <Suspense
-        fallback={
-          <Flex h="100vh" w="100vw" align={"center"} justify={"center"}>
-            <Loader />
-          </Flex>
-        }
-      >
+      <Suspense fallback={<AppLoader />}>
         <RouterProvider router={router} />
       </Suspense>
     </MantineProvider>

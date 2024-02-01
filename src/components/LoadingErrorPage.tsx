@@ -41,7 +41,15 @@ export function LoadingErrorPage() {
           To use this app, you will need to disable any and all of those
           features. This app uses minimal GDPR-compliant analytics via Plausible
           to measure usage. No other data is sent out of your browser to a
-          server.
+          server. If you think you are getting this error through some other
+          cause besides those listed above, please feel free to add to this{" "}
+          <a
+            target="_blank"
+            href="https://github.com/cmgriffing/orderly/issues/33"
+          >
+            Issue on GitHub
+          </a>
+          .
         </Text>
       </Flex>
     </Flex>

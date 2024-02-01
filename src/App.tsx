@@ -35,6 +35,7 @@ import { NodeApi, Tree } from "react-arborist";
 import { BookWithChapters, BooksCRUD } from "./data/repositories/books";
 import { ChapterModel, ChaptersCRUD } from "./data/repositories/chapters";
 
+import { AppLoader } from "./components/AppLoader";
 import { CreateOrUpdateModal } from "./components/CreateOrUpdateModal";
 import { SettingsModal } from "./components/SettingsModal";
 
@@ -98,6 +99,10 @@ export function App() {
       openSettingsModal();
     }
   }, [whisperModel, openSettingsModal, ready]);
+
+  if (!ready) {
+    return <AppLoader />;
+  }
 
   return (
     <>
