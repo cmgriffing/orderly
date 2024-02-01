@@ -46,7 +46,7 @@ To run the dev server please run:
 pnpm dev
 ```
 
-This will launch the app at `http://localhost:5173/orderly/` by default as long as the port is available.
+This will launch the app at `http://localhost:5173/` by default as long as the port is available.
 
 ### Commits
 

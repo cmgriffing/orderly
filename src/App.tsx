@@ -118,7 +118,7 @@ export function App() {
                 size="sm"
               />
               <Flex align="center" gap={8} wrap={"nowrap"}>
-                <img src="/orderly/orderly.svg" alt="Orderly" width={32} />
+                <img src="/orderly.svg" alt="Orderly" width={32} />
                 <Link to="/" color="inherit">
                   <Text
                     ff="Courier New"

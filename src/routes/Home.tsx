@@ -3,7 +3,7 @@ import { Flex, Title, Text, Image } from "@mantine/core";
 export function Home() {
   return (
     <Flex align={"center"} pt="4rem" miw="100%" w="100%" direction="column">
-      <Image src="/orderly/orderly.svg" alt="Orderly Logo" w="300px" />
+      <Image src="/orderly.svg" alt="Orderly Logo" w="300px" />
       <Title order={1} mt="2rem" mb="1rem">
         Welcome to Orderly
       </Title>
