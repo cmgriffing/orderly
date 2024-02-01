@@ -86,7 +86,7 @@ export function App() {
         setTimeout(() => {
           setAppReady(true);
           setFetchTimestamp(Date.now());
-        }, 3000);
+        }, 10000);
       });
     }
 
