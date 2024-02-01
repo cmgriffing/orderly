@@ -21,7 +21,7 @@
       bottom: 2rem;
       left: 0;
       right: 0;
-      display: none;
+      // display: none;
 
       .other-snippet-label {
         border-radius: 1rem;
@@ -44,11 +44,11 @@
       }
     }
 
-    &:hover,
-    &:focus {
-      .other-snippet-label-wrapper {
-        display: flex;
-      }
-    }
+    // &:hover,
+    // &:focus {
+    //   .other-snippet-label-wrapper {
+    //     display: flex;
+    //   }
+    // }
   }
 }

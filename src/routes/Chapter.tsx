@@ -91,7 +91,10 @@ export function Chapter() {
   useEffect(() => {
     setCurrentSnippetId(snippetId);
   }, [snippetId, setCurrentSnippetId]);
-  async function createNewSnippet(e: any) {
+
+  async function createNewSnippet(
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) {
     e.stopPropagation();
     // create new snippet with default name
 
@@ -116,6 +119,7 @@ export function Chapter() {
       <Menu.Target>
         <ActionIcon
           variant="transparent"
+          size="xl"
           onClick={(e) => {
             e.stopPropagation();
           }}
@@ -132,11 +136,12 @@ export function Chapter() {
         >
           Rename
         </Menu.Item>
-        <Menu.Item leftSection={<IconPlus />} onClick={async (e) => {}}>
+        <Menu.Item leftSection={<IconPlus />} onClick={createNewSnippet}>
           Add Snippet
         </Menu.Item>
         <Menu.Item
           leftSection={<IconTrash />}
+          c="red"
           onClick={async (e) => {
             e.stopPropagation();
             await ChaptersCRUD.delete(chapterId);
@@ -190,7 +195,7 @@ export function Chapter() {
               })}
             >
               <Flex justify={"space-between"} align={"center"}>
-                <Flex align="center" gap="1rem" maw={"80dvw"}>
+                <Flex align="center" maw={"80dvw"}>
                   {/* <ActionIcon variant="subtle" onClick={openEditChapterModal}>
                     <IconEdit />
                   </ActionIcon> */}
@@ -231,7 +236,7 @@ export function Chapter() {
                   </Link>
                 ))}
               </ScrollArea>
-              <Button onClick={() => {}}>Create New Snippet</Button>
+              <Button onClick={createNewSnippet}>Create New Snippet</Button>
             </div>
             <Flex
               className="snippets-tree"
