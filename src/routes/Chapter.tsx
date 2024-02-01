@@ -7,8 +7,6 @@ import {
   Text,
   ScrollArea,
   Button,
-  Drawer,
-  Box,
   Title,
   CloseButton,
 } from "@mantine/core";
@@ -24,7 +22,6 @@ import {
   IconPlus,
   IconTrash,
   IconCaretDownFilled,
-  IconEdit,
 } from "@tabler/icons-react";
 
 import {
