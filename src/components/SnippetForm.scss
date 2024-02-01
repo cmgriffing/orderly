@@ -7,7 +7,7 @@
 
   &.disabled {
     padding: 1rem;
-    margin-top: -20%;
+    margin-top: -30%;
 
     .contents {
       opacity: 0.84;
@@ -21,7 +21,7 @@
       bottom: 2rem;
       left: 0;
       right: 0;
-      display: none;
+      // display: none;
 
       .other-snippet-label {
         border-radius: 1rem;
@@ -36,7 +36,7 @@
 
     &.below {
       margin-top: 0;
-      margin-bottom: -20%;
+      margin-bottom: -30%;
 
       .other-snippet-label-wrapper {
         bottom: auto;
@@ -44,11 +44,11 @@
       }
     }
 
-    &:hover,
-    &:focus {
-      .other-snippet-label-wrapper {
-        display: flex;
-      }
-    }
+    // &:hover,
+    // &:focus {
+    //   .other-snippet-label-wrapper {
+    //     display: flex;
+    //   }
+    // }
   }
 }

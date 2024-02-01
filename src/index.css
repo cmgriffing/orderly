@@ -71,6 +71,14 @@ button:focus-visible {
   }
 }
 
+.single-line-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  /* display: inline-block;
+  width: 100%; */
+}
+
 /* Mantine Overrides */
 
 /* this seems like a bug in mantine */

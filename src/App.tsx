@@ -110,14 +110,14 @@ export function App() {
       >
         <AppShell.Header>
           <Flex justify={"space-between"} align="center" p={12}>
-            <Group h="100%" px="md">
+            <Group h="100%" px="md" wrap="nowrap">
               <Burger
                 opened={opened}
                 onClick={toggle}
                 hiddenFrom="sm"
                 size="sm"
               />
-              <Flex align="center" gap={8}>
+              <Flex align="center" gap={8} wrap={"nowrap"}>
                 <img src="/orderly/orderly.svg" alt="Orderly" width={32} />
                 <Link to="/" color="inherit">
                   <Text
@@ -134,10 +134,10 @@ export function App() {
                 </Text>
               </Flex>
             </Group>
-            <Group>
+            <Group wrap="nowrap">
               <Button
+                className="mobile-friendly-button-md"
                 variant={"outline"}
-                rightSection={<IconUpload />}
                 onClick={() => {
                   const inputElement = document.createElement("input");
                   inputElement.setAttribute("type", "file");
@@ -164,11 +164,14 @@ export function App() {
                   inputElement.click();
                 }}
               >
-                Import
+                <Text className="sr-only-md" mr="1rem">
+                  Import
+                </Text>
+                <IconUpload />
               </Button>
               <Button
+                className="mobile-friendly-button-md"
                 variant={"outline"}
-                rightSection={<IconDownload />}
                 onClick={async () => {
                   const dbFile = await DBUtils.getDatabaseFile();
                   const aElement = document.createElement("a");
@@ -180,15 +183,21 @@ export function App() {
                   URL.revokeObjectURL(href);
                 }}
               >
-                Export
+                <Text className="sr-only-md" mr="1rem">
+                  Export
+                </Text>
+                <IconDownload />
               </Button>
               <Button
-                rightSection={<IconSettings />}
+                className="mobile-friendly-button-md"
                 onClick={() => {
                   openSettingsModal();
                 }}
               >
-                Settings
+                <Text className="sr-only-md" mr="1rem">
+                  Settings
+                </Text>
+                <IconSettings />
               </Button>
             </Group>
           </Flex>
@@ -277,7 +286,9 @@ export function App() {
                     >
                       <Flex>
                         <FolderArrow node={node} />
-                        {node.data.book.title}
+                        <Text className="single-line-ellipsis" maw="210px">
+                          {node.data.book.title}
+                        </Text>
                       </Flex>
                       <Menu shadow="md">
                         <Menu.Target>
@@ -426,7 +437,9 @@ export function App() {
                         selected: selectedChapter?.id === nodeData.chapter.id,
                       })}
                     >
-                      {nodeData.chapter.label}
+                      <Text className="single-line-ellipsis">
+                        {nodeData.chapter.label}
+                      </Text>
                     </Link>
                   </div>
                 );
@@ -439,7 +452,12 @@ export function App() {
             </Flex>
           )}
         </AppShell.Navbar>
-        <AppShell.Main w={"100dvw"} display={"flex"}>
+        <AppShell.Main
+          w={"100dvw"}
+          h="100dvh"
+          display={"flex"}
+          pos={"relative"}
+        >
           <Outlet />
 
           <CreateOrUpdateModal

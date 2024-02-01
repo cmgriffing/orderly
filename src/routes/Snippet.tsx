@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, startTransition } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Flex, Button, Modal, Text } from "@mantine/core";
+import { Flex, Button, Modal, Text, Box } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useAtom } from "jotai";
 import {
@@ -237,7 +237,9 @@ export function Snippet() {
           />
         )}
 
-        <Flex direction={"column"} align="center" justify="center" my={42}>
+        {!previousSnippet && <Box h="0px" />}
+
+        <Flex direction={"column"} align="center" justify="center" my={20}>
           <Button
             variant="light"
             rightSection={<IconCirclePlus />}
@@ -296,7 +298,7 @@ export function Snippet() {
           onDelete={() => {}}
         />
 
-        <Flex direction={"column"} align="center" justify="center" my={42}>
+        <Flex direction={"column"} align="center" justify="center" my={20}>
           <Button
             variant="light"
             rightSection={<IconCirclePlus />}
@@ -334,6 +336,8 @@ export function Snippet() {
             below={true}
           />
         )}
+
+        {!nextSnippet && <Box h="0px" />}
 
         <Modal
           opened={recordingModalOpened}
