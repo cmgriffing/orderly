@@ -3,8 +3,8 @@ export const whisperModelUrls = {
   tiny: "/models/tiny.bin",
   "base.en": "/models/base.en.bin",
   base: "/models/base.bin",
-  "small.en": "/models/small.en.bin",
-  small: "/models/small.bin",
+  // "small.en": "/models/small.en.bin",
+  // small: "/models/small.bin",
 
   "tiny-en-q5_1": "/models/tiny.en-q5_1.bin",
   "tiny-q5_1": "/models/tiny-q5_1.bin",
@@ -12,9 +12,9 @@ export const whisperModelUrls = {
   "base-q5_1": "/models/base-q5_1.bin",
   "small-en-q5_1": "/models/small.en-q5_1.bin",
   "small-q5_1": "/models/small-q5_1.bin",
-  "medium-en-q5_0": "/models/medium.en-q5_0.bin",
-  "medium-q5_0": "/models/medium-q5_0.bin",
-  "large-q5_0": "/models/large-q5_0.bin",
+  // "medium-en-q5_0": "/models/medium.en-q5_0.bin",
+  // "medium-q5_0": "/models/medium-q5_0.bin",
+  // "large-q5_0": "/models/large-q5_0.bin",
 };
 
 export const whisperModelSizes = {
@@ -22,8 +22,8 @@ export const whisperModelSizes = {
   tiny: 75,
   "base.en": 142,
   base: 142,
-  "small.en": 466,
-  small: 466,
+  // "small.en": 466,
+  // small: 466,
 
   "tiny-en-q5_1": 31,
   "tiny-q5_1": 31,
@@ -31,9 +31,9 @@ export const whisperModelSizes = {
   "base-q5_1": 57,
   "small-en-q5_1": 182,
   "small-q5_1": 182,
-  "medium-en-q5_0": 515,
-  "medium-q5_0": 515,
-  "large-q5_0": 1030,
+  // "medium-en-q5_0": 515,
+  // "medium-q5_0": 515,
+  // "large-q5_0": 1030,
 };
 
 export interface ModelOption {
@@ -58,14 +58,14 @@ export const whisperModelsBase: ModelOption[] = [
     label: "base (142 MB)",
     value: "base",
   },
-  {
-    label: "small.en (466 MB)",
-    value: "small.en",
-  },
-  {
-    label: "small (466 MB)",
-    value: "small",
-  },
+  // {
+  //   label: "small.en (466 MB)",
+  //   value: "small.en",
+  // },
+  // {
+  //   label: "small (466 MB)",
+  //   value: "small",
+  // },
 ];
 
 export const whisperModelsQuantized: ModelOption[] = [
@@ -96,19 +96,19 @@ export const whisperModelsQuantized: ModelOption[] = [
     value: "small-q5_1",
   },
 
-  {
-    label: "medium.en (Q5_0, 515 MB)",
-    value: "medium-en-q5_0",
-  },
-  {
-    label: "medium (Q5_0, 515 MB)",
-    value: "medium-q5_0",
-  },
+  // {
+  //   label: "medium.en (Q5_0, 515 MB)",
+  //   value: "medium-en-q5_0",
+  // },
+  // {
+  //   label: "medium (Q5_0, 515 MB)",
+  //   value: "medium-q5_0",
+  // },
 
-  {
-    label: "large (Q5_0, 1030 MB)",
-    value: "large-q5_0",
-  },
+  // {
+  //   label: "large (Q5_0, 1030 MB)",
+  //   value: "large-q5_0",
+  // },
 ];
 
 export const whisperModels = [...whisperModelsBase, ...whisperModelsQuantized];
