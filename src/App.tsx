@@ -286,6 +286,7 @@ export function App() {
                 return !node.isLeaf ? (
                   <Flex direction={"column"}>
                     <Flex
+                      className="foo"
                       style={style}
                       justify={"space-between"}
                       pr={32}
@@ -293,9 +294,20 @@ export function App() {
                     >
                       <Flex>
                         <FolderArrow node={node} />
-                        <Text className="single-line-ellipsis" maw="210px">
+                        <Text
+                          className="single-line-ellipsis"
+                          maw={
+                            !!book.chapters.length && ready ? "210px" : "140px"
+                          }
+                        >
                           {node.data.book.title}
                         </Text>
+
+                        {!book.chapters.length && ready && (
+                          <Text c="red" ml="0.5rem">
+                            (empty)
+                          </Text>
+                        )}
                       </Flex>
                       <Menu shadow="md">
                         <Menu.Target>
@@ -429,12 +441,6 @@ export function App() {
                         </Menu.Dropdown>
                       </Menu>
                     </Flex>
-                    {!book.chapters.length && ready && (
-                      <Flex px="2rem" justify="center" align="center">
-                        Chapters not found. You can create one using the menu
-                        above.
-                      </Flex>
-                    )}
                   </Flex>
                 ) : (
                   <div ref={dragHandle} style={style}>
