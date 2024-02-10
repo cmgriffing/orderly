@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "react";
 import { useAtom } from "jotai";
 import {
   Modal,
@@ -14,12 +14,13 @@ import {
   Tooltip,
 } from "@mantine/core";
 import {
+  ModelOption,
   whisperModelSizes,
   whisperModelsBase,
   whisperModelsQuantized,
 } from "../whisper-utils";
 import { currentModel, currentSettings, fetchTimestamp } from "../state/main";
-import { loadOrGetModel } from "../utils/model-data";
+import { getDownloadedModels, loadOrGetModel } from "../utils/model-data";
 import { WhisperModelName } from "../types";
 import { IconQuestionMark } from "@tabler/icons-react";
 
@@ -45,6 +46,8 @@ export function SettingsModal({
   const whisperModelUpdated = useCallback((_newModel: Uint8Array) => {
     setNewModel(_newModel);
   }, []);
+  const [whisperModelsBaseState, setWhisperModelsBaseState] = useState(whisperModelsBase);
+  const [whisperModelsQuantizedState, setWhisperModelsQuantizedState] = useState(whisperModelsQuantized);
 
   useEffect(() => {
     setNewModel(model);
@@ -65,6 +68,27 @@ export function SettingsModal({
     loading: whisperModelLoading,
     loadingProgress,
   } = useModelData(selectedModel, whisperModelUpdated);
+
+  useEffect(() => {
+    const updateModels = async (models: ModelOption[], setStateCallback: Dispatch<SetStateAction<ModelOption[]>>) => {
+      const downloadedModels = await getDownloadedModels();
+      const updatedModels = models.map((item) => {
+        const isDownloaded = downloadedModels.includes(item.value);
+        return {
+          ...item,
+          label: isDownloaded ? `${item.label} Downloaded` : item.label
+        };
+      });
+      setStateCallback(updatedModels);
+    };
+
+    (async () => {
+      await Promise.all([
+        updateModels(whisperModelsBase, setWhisperModelsBaseState),
+        updateModels(whisperModelsQuantized, setWhisperModelsQuantizedState),
+      ])
+    })();
+  }, [whisperModelLoaded]);
 
   return (
     <Modal
@@ -130,11 +154,11 @@ export function SettingsModal({
             { label: "None", value: "" },
             {
               group: "Raw",
-              items: whisperModelsBase,
+              items: whisperModelsBaseState,
             },
             {
               group: "Quantized",
-              items: whisperModelsQuantized,
+              items: whisperModelsQuantizedState,
             },
           ]}
           onChange={(e) => {
