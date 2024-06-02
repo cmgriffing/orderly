@@ -7,8 +7,9 @@ const dbName = "whisperModels";
 // const modelBaseUrl = "/models";
 // remote
 // const modelBaseUrl = "https://f002.backblazeb2.com/file/orderly-models"; // NO CORS
-const modelBaseUrl =
-  "https://link.storjshare.io/s/jueavj4qtolpgszkbp5awref22da/models";
+// const modelBaseUrl =
+// "https://link.storjshare.io/s/jueavj4qtolpgszkbp5awref22da/models"; // TRIAL EXPIRED
+const modelBaseUrl = "https://orderly-models.cmgriffing.com";
 
 // TODO: this method seems to leak memory when changing models
 export function loadOrGetModel(
@@ -83,7 +84,7 @@ export function loadOrGetModel(
             return;
           }
 
-          const url = `${modelBaseUrl}/${selectedModel}.bin?download=1`;
+          const url = `${modelBaseUrl}/${selectedModel}.bin`;
 
           fetchRemote(url, (progress) => {
             progressCallback(progress);
