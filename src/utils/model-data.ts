@@ -11,6 +11,37 @@ const dbName = "whisperModels";
 // "https://link.storjshare.io/s/jueavj4qtolpgszkbp5awref22da/models"; // TRIAL EXPIRED
 const modelBaseUrl = "https://orderly-models.cmgriffing.com";
 
+export function getDownloadedModels(): Promise<string[]> {
+  return new Promise((resolve, reject) => {
+    if (!navigator.storage || !navigator.storage.estimate) {
+      console.log("loadRemote: navigator.storage.estimate() is not supported");
+    }
+
+    const openRequest = indexedDB.open(dbName, dbVersion);
+
+    openRequest.onsuccess = function () {
+      const db = openRequest.result;
+      const tx = db.transaction(["models"], "readonly");
+      const objectStore = tx.objectStore("models");
+      const localFilesRequest = objectStore.getAllKeys();
+
+      localFilesRequest.onsuccess = function () {
+        resolve((localFilesRequest.result as string[]) || []);
+      };
+
+      localFilesRequest.onerror = function () {
+        console.error("Failed to fetch models");
+        reject(new Error("Failed to fetch models"));
+      };
+    };
+
+    openRequest.onerror = function () {
+      console.error("Failed to open request to indexedDB");
+      reject(new Error("Failed to open request to indexedDB"));
+    };
+  });
+}
+
 // TODO: this method seems to leak memory when changing models
 export function loadOrGetModel(
   selectedModel: keyof typeof whisperModelSizes | "" | undefined,
