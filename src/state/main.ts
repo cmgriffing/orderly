@@ -72,7 +72,9 @@ export const currentSnippets = atom(async (get) => {
 
 export const currentSnippetId = atom<number | undefined>(undefined);
 export const currentSnippet = atom(async (get) => {
-  get(fetchTimestamp);
+  // Making the current snippet dependent upon the fetchTimestamp caused the text field to overwrite itself at times.
+  // We shouldn't need that since the current timestamps form is its own source of truth.
+  // get(fetchTimestamp);
   const snippetId = get(currentSnippetId);
   const ready = get(appReady);
   if (!ready) {
