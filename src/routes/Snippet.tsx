@@ -10,6 +10,7 @@ import {
   fetchTimestamp,
   whisperInstance,
   currentSettings,
+  currentChapterId,
 } from "../state/main";
 import { IconCirclePlus } from "@tabler/icons-react";
 import { SnippetModel, SnippetsCRUD } from "../data/repositories/snippets";
@@ -44,6 +45,7 @@ export function Snippet() {
   const snippetId = parseInt(rawSnippetId || "-1");
   const [, setFetchTimestamp] = useAtom(fetchTimestamp);
   const [, setCurrentSnippetId] = useAtom(currentSnippetId);
+  const [chapterId] = useAtom(currentChapterId);
   const [snippet] = useAtom(currentSnippet);
   const [snippets] = useAtom(currentSnippets);
   const [settings] = useAtom(currentSettings);
@@ -295,7 +297,23 @@ export function Snippet() {
             openRecordingModal();
             startRecording();
           }}
-          onDelete={() => {}}
+          onDelete={async () => {
+            await SnippetsCRUD.delete(snippetId);
+            startTransition(() => {
+              setFetchTimestamp(Date.now());
+            });
+            if (nextSnippet) {
+              navigate(
+                `/books/${bookId}/chapters/${chapterId}/snippets/${nextSnippet.id}`
+              );
+            } else if (previousSnippet) {
+              navigate(
+                `/books/${bookId}/chapters/${chapterId}/snippets/${previousSnippet.id}`
+              );
+            } else {
+              navigate(`/books/${bookId}/chapters/${chapterId}`);
+            }
+          }}
         />
 
         <Flex direction={"column"} align="center" justify="center" my={20}>

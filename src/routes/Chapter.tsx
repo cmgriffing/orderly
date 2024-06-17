@@ -10,7 +10,7 @@ import {
   Title,
   CloseButton,
 } from "@mantine/core";
-import { useMediaQuery } from "@mantine/hooks";
+import { useMediaQuery, useViewportSize } from "@mantine/hooks";
 import { Tree } from "react-arborist";
 import { useAtom } from "jotai";
 import { useDisclosure } from "@mantine/hooks";
@@ -55,6 +55,7 @@ export function Chapter() {
   const chapterId = parseInt(rawChapterId || "-1");
   const snippetId = parseInt(rawSnippetId || "-1");
 
+  const { height: innerHeight } = useViewportSize();
   const shouldHideTreeColumn = useMediaQuery(`(max-width: 1024px)`);
 
   const [ready] = useAtom(appReady);
@@ -191,7 +192,13 @@ export function Chapter() {
                 open: snippetsMenuOpened,
               })}
             >
-              <Flex justify={"space-between"} align={"center"}>
+              <Flex
+                justify={"space-between"}
+                align={"center"}
+                mx={"-10px"}
+                mt={"-10px"}
+                bg={"white"}
+              >
                 <Flex align="center" maw={"80dvw"}>
                   {/* <ActionIcon variant="subtle" onClick={openEditChapterModal}>
                     <IconEdit />
@@ -250,6 +257,7 @@ export function Chapter() {
 
               {!!snippets?.length && snippets?.length > 0 && (
                 <Tree
+                  height={innerHeight - 120}
                   rowHeight={36}
                   onMove={async (e) => {
                     let newSortOrder = 0;
@@ -311,7 +319,11 @@ export function Chapter() {
               className="snippets-menu-button"
               mb="1rem"
               onClick={() => {
-                openSnippetsMenu();
+                if (!snippetsMenuOpened) {
+                  openSnippetsMenu();
+                } else {
+                  closeSnippetsMenu();
+                }
               }}
             >
               <Flex align="center">
