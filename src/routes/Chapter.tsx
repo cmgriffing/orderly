@@ -241,7 +241,7 @@ export function Chapter() {
               w="20rem"
               direction={"column"}
             >
-              <Flex justify={"space-between"}>
+              <Flex justify={"space-between"} align={"center"} mt={"-5px"}>
                 <Text className="single-line-ellipsis" maw="260px">
                   {chapter?.label}
                 </Text>
