@@ -49,7 +49,6 @@ export function Snippet() {
   const [snippet] = useAtom(currentSnippet);
   const [snippets] = useAtom(currentSnippets);
   const [settings] = useAtom(currentSettings);
-  const contentRef = useRef<HTMLTextAreaElement>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -61,6 +60,7 @@ export function Snippet() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [previousSnippet, setPreviousSnippet] = useState<SnippetModel>();
   const [nextSnippet, setNextSnippet] = useState<SnippetModel>();
+  const [whisperResult, setWhisperResult] = useState("");
 
   const [
     recordingModalOpened,
@@ -126,6 +126,7 @@ export function Snippet() {
     async function listener(e: Event) {
       const event = e as CustomEvent;
       console.log("resultEvent", event, event.detail);
+      setWhisperResult(event.detail || "");
 
       await SnippetsCRUD.update(snippetId, {
         content: event.detail,
@@ -138,10 +139,6 @@ export function Snippet() {
       startTransition(() => {
         setFetchTimestamp(Date.now());
       });
-
-      // if (contentRef.current) {
-      //   contentRef.current.value = event.detail;
-      // }
     }
 
     window.addEventListener("whisperResult", listener);
@@ -276,7 +273,7 @@ export function Snippet() {
         <SnippetForm
           snippet={snippet}
           bookId={bookId || ""}
-          contentRef={contentRef}
+          whisperResult={whisperResult}
           onEditLabel={async (label) => {
             await SnippetsCRUD.update(snippetId, {
               label,

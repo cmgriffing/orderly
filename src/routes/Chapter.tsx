@@ -218,6 +218,7 @@ export function Chapter() {
               <ScrollArea mah={"100%"} w="100%">
                 {snippets?.map((snippet) => (
                   <Link
+                    key={`${bookId}${snippet.id}`}
                     to={`/books/${bookId}/chapters/${snippet.chapterId}/snippets/${snippet?.id}`}
                     onClick={(e) => {
                       e.stopPropagation();

@@ -1,4 +1,4 @@
-import { RefObject, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   TextInput,
   Textarea,
@@ -34,13 +34,13 @@ import "./SnippetForm.scss";
 interface BaseSnippetProps {
   bookId: string;
   snippet: SnippetModel | undefined;
-  contentRef?: RefObject<HTMLTextAreaElement>;
   disabled?: boolean;
   below?: boolean;
   onEditLabel?: (label: string) => void | Promise<void>;
   onEditContent?: (content: string) => void | Promise<void>;
   onDelete?: () => void | Promise<void>;
   onRecord?: () => void | Promise<void>;
+  whisperResult?: string;
 }
 
 interface SnippetFormProps extends BaseSnippetProps {
@@ -49,6 +49,7 @@ interface SnippetFormProps extends BaseSnippetProps {
   onEditContent: (content: string) => void | Promise<void>;
   onDelete: () => void | Promise<void>;
   onRecord: () => void | Promise<void>;
+  whisperResult: string;
 }
 
 interface DisabledSnippetProps extends BaseSnippetProps {
@@ -57,7 +58,6 @@ interface DisabledSnippetProps extends BaseSnippetProps {
 
 export function SnippetForm({
   snippet,
-  contentRef,
   disabled,
   onEditLabel = () => {},
   onEditContent = () => {},
@@ -65,6 +65,7 @@ export function SnippetForm({
   onRecord = () => {},
   below,
   bookId,
+  whisperResult,
 }: SnippetFormProps | DisabledSnippetProps) {
   const [labelValue, setLabelValue] = useState(snippet?.label || "");
   const [contentValue, setContentValue] = useState(snippet?.content || "");
@@ -77,6 +78,12 @@ export function SnippetForm({
     setLabelValue(snippet?.label || "");
     setContentValue(snippet?.content || "");
   }, [snippet]);
+
+  useEffect(() => {
+    if (whisperResult) {
+      setContentValue(whisperResult);
+    }
+  }, [whisperResult]);
 
   const contents = (
     <>
@@ -139,7 +146,6 @@ export function SnippetForm({
         disabled={disabled}
       />
       <Textarea
-        ref={contentRef}
         value={contentValue}
         label="Content"
         rows={!disabled ? 7 : 2}
