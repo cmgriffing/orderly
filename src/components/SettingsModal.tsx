@@ -1,4 +1,10 @@
-import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { useAtom } from "jotai";
 import {
   Modal,
@@ -46,8 +52,10 @@ export function SettingsModal({
   const whisperModelUpdated = useCallback((_newModel: Uint8Array) => {
     setNewModel(_newModel);
   }, []);
-  const [whisperModelsBaseState, setWhisperModelsBaseState] = useState(whisperModelsBase);
-  const [whisperModelsQuantizedState, setWhisperModelsQuantizedState] = useState(whisperModelsQuantized);
+  const [whisperModelsBaseState, setWhisperModelsBaseState] =
+    useState(whisperModelsBase);
+  const [whisperModelsQuantizedState, setWhisperModelsQuantizedState] =
+    useState(whisperModelsQuantized);
 
   useEffect(() => {
     setNewModel(model);
@@ -70,24 +78,31 @@ export function SettingsModal({
   } = useModelData(selectedModel, whisperModelUpdated);
 
   useEffect(() => {
-    const updateModels = async (models: ModelOption[], setStateCallback: Dispatch<SetStateAction<ModelOption[]>>) => {
-      const downloadedModels = await getDownloadedModels();
-      const updatedModels = models.map((item) => {
-        const isDownloaded = downloadedModels.includes(item.value);
-        return {
-          ...item,
-          label: isDownloaded ? `${item.label} Downloaded` : item.label
-        };
-      });
-      setStateCallback(updatedModels);
-    };
+    if (whisperModelLoaded) {
+      const updateModels = async (
+        models: ModelOption[],
+        setStateCallback: Dispatch<SetStateAction<ModelOption[]>>
+      ) => {
+        const downloadedModels = await getDownloadedModels().catch(
+          () => [] as string[]
+        );
+        const updatedModels = models.map((item) => {
+          const isDownloaded = downloadedModels.includes(item.value);
+          return {
+            ...item,
+            label: isDownloaded ? `${item.label} Downloaded` : item.label,
+          };
+        });
+        setStateCallback(updatedModels);
+      };
 
-    (async () => {
-      await Promise.all([
-        updateModels(whisperModelsBase, setWhisperModelsBaseState),
-        updateModels(whisperModelsQuantized, setWhisperModelsQuantizedState),
-      ])
-    })();
+      (async () => {
+        await Promise.all([
+          updateModels(whisperModelsBase, setWhisperModelsBaseState),
+          updateModels(whisperModelsQuantized, setWhisperModelsQuantizedState),
+        ]);
+      })();
+    }
   }, [whisperModelLoaded]);
 
   return (

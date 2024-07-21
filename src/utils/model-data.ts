@@ -1,6 +1,6 @@
 import { whisperModelSizes } from "../whisper-utils";
 
-const dbVersion = 1;
+const dbVersion = Date.now();
 const dbName = "whisperModels";
 
 // local
@@ -20,19 +20,23 @@ export function getDownloadedModels(): Promise<string[]> {
     const openRequest = indexedDB.open(dbName, dbVersion);
 
     openRequest.onsuccess = function () {
-      const db = openRequest.result;
-      const tx = db.transaction(["models"], "readonly");
-      const objectStore = tx.objectStore("models");
-      const localFilesRequest = objectStore.getAllKeys();
+      try {
+        const db = openRequest.result;
+        const tx = db.transaction(["models"], "readonly");
+        const objectStore = tx.objectStore("models");
+        const localFilesRequest = objectStore.getAllKeys();
 
-      localFilesRequest.onsuccess = function () {
-        resolve((localFilesRequest.result as string[]) || []);
-      };
+        localFilesRequest.onsuccess = function () {
+          resolve((localFilesRequest.result as string[]) || []);
+        };
 
-      localFilesRequest.onerror = function () {
-        console.error("Failed to fetch models");
-        reject(new Error("Failed to fetch models"));
-      };
+        localFilesRequest.onerror = function () {
+          console.error("Failed to fetch models");
+          reject(new Error("Failed to fetch models"));
+        };
+      } catch (e: unknown) {
+        reject(e);
+      }
     };
 
     openRequest.onerror = function () {
@@ -66,20 +70,14 @@ export function loadOrGetModel(
 
     openRequest.onupgradeneeded = function () {
       const db = openRequest.result;
-      if (db.version == 1) {
+      try {
         db.createObjectStore("models", { autoIncrement: false });
-        console.log(
-          "loadRemote: created IndexedDB " + db.name + " version " + db.version
-        );
-      } else {
-        // clear the database
-        // @ts-expect-error this event type seems wrong
-        const os = openRequest.transaction.objectStore("models");
-        os.clear();
-        console.log(
-          "loadRemote: cleared IndexedDB " + db.name + " version " + db.version
-        );
+      } catch (e: unknown) {
+        console.log("indexeddb models already created");
       }
+      console.log(
+        "loadRemote: created IndexedDB " + db.name + " version " + db.version
+      );
     };
 
     openRequest.onsuccess = function () {
