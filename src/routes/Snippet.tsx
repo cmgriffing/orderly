@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, startTransition } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Flex, Button, Modal, Text, Box } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
+import { notifications } from "@mantine/notifications";
 import { useAtom } from "jotai";
 import {
   currentSnippet,
@@ -85,6 +86,13 @@ export function Snippet() {
         },
         userMediaErrorCallback: () => {
           setIsRecording(false);
+          closeRecordingModal();
+
+          notifications.show({
+            title: "Error",
+            color: "red",
+            message: `This app needs access to a microphone to accomplish it's main goal.`,
+          });
         },
         finishedCallback: async (newAudio, newAudioBlob) => {
           setIsRecording(false);
@@ -511,7 +519,6 @@ function getMicrophone({
   userMediaErrorCallback: () => void;
   finishedCallback: (audio: Float32Array, blob: Blob) => void;
 }) {
-  console.log("useMicrophone called");
   let stream: MediaStream | null = null;
   let mediaRecorder: MediaRecorder | null = null;
   let chunks: Blob[] = [];
@@ -596,6 +603,7 @@ function getMicrophone({
       })
       .catch(function (err) {
         console.log("js: error getting audio stream: " + err);
+        userMediaErrorCallback();
       });
   }
 
